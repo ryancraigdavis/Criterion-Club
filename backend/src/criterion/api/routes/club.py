@@ -106,3 +106,9 @@ async def next_screening(request: Request) -> dict:
 async def schedule(request: Request, limit: int = Query(default=4, ge=1, le=12)) -> dict:
     rows = club_repo.upcoming_events(conn_of(request), events.cutoff(datetime.now(UTC)), limit)
     return {"screenings": [events.public(row) for row in rows]}
+
+
+@router.get("/club/past")
+async def past(request: Request, limit: int = Query(default=24, ge=1, le=60)) -> dict:
+    rows = club_repo.past_events(conn_of(request), events.cutoff(datetime.now(UTC)), limit)
+    return {"screenings": [events.past(row) for row in rows]}

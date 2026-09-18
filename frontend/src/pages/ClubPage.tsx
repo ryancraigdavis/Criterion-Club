@@ -2,6 +2,7 @@ import '../club/club.css'
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import { screeningDate, screeningTime } from '../club/format'
 import { type ClubLead, clubLead } from '../club/load'
+import { Mosaic } from '../club/Mosaic'
 import { PollVote } from '../club/PollVote'
 import { usePoll } from '../club/polls'
 import { RsvpForm } from '../club/RsvpForm'
@@ -10,6 +11,7 @@ import { SuggestionForm } from '../club/SuggestionForm'
 import { laterScreenings, useScreenings } from '../club/screenings'
 import { useSettings } from '../club/settings'
 import type { Screening } from '../club/types'
+import { Watched } from '../club/Watched'
 import { SiteHeader } from '../ui/SiteHeader'
 
 type Panel = { kind: 'rsvp'; screening: Screening } | { kind: 'suggest' } | null
@@ -149,11 +151,13 @@ export function ClubPage() {
   const next = useScreenings((state) => state.next)
   const schedule = useScreenings((state) => state.schedule)
   const status = useScreenings((state) => state.status)
+  const past = useScreenings((state) => state.past)
   const [panel, setPanel] = useState<Panel>(null)
   const later = useMemo(() => laterScreenings(schedule, next), [schedule, next])
   const showLater = useSettings((state) => state.showSchedule)
   return (
     <>
+      <Mosaic />
       <SiteHeader />
       <main className="club-page">
         <h1 className="visually-hidden">Criterion Club</h1>
@@ -167,6 +171,7 @@ export function ClubPage() {
           screenings={showLater ? later : []}
           onRsvp={(screening) => setPanel({ kind: 'rsvp', screening })}
         />
+        <Watched screenings={past} />
       </main>
     </>
   )

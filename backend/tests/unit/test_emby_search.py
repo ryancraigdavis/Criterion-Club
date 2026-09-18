@@ -155,3 +155,50 @@ async def test_falls_back_to_the_first_user_without_an_administrator():
 
     client = EmbyClient("http://emby.test", "key", transport=httpx.MockTransport(handler))
     assert await client.user_id() == "u-one"
+
+
+class Collections:
+    def __init__(self, boxsets: list[dict], members: list[dict]) -> None:
+        self.boxsets, self.members = boxsets, members
+        self.requests: list[httpx.Request] = []
+
+    def _handle(self, request: httpx.Request) -> httpx.Response:
+        self.requests.append(request)
+        params = request.url.params
+        body = (
+            USERS
+            if request.url.path == "/Users"
+            else {
+                "Items": self.boxsets
+                if params.get("IncludeItemTypes") == "BoxSet"
+                else self.members
+            }
+        )
+        return httpx.Response(200, json=body)
+
+    def client(self) -> EmbyClient:
+        return EmbyClient("http://emby.test", "key", transport=httpx.MockTransport(self._handle))
+
+
+BOXSETS = [
+    {"Id": "b-other", "Name": "Criterion Collection Extras"},
+    {"Id": "b-crit", "Name": "The Criterion Collection"},
+]
+MEMBERS = [
+    {"Id": "m1", "ImageTags": {"Primary": "p1"}},
+    {"Id": "m2", "ImageTags": {}},
+    {"Id": "m3", "ImageTags": {"Primary": "p3"}},
+]
+
+
+async def test_collection_posters_use_the_exactly_named_boxset():
+    emby = Collections(BOXSETS, MEMBERS)
+    posters = await emby.client().collection_posters("the criterion collection")
+    assert posters == [("m1", "p1"), ("m3", "p3")]
+    assert emby.requests[-1].url.params["ParentId"] == "b-crit"
+
+
+async def test_a_missing_collection_has_no_posters():
+    emby = Collections([{"Id": "b-other", "Name": "Something Else"}], MEMBERS)
+    assert await emby.client().collection_posters("The Criterion Collection") == []
+    assert all("ParentId" not in request.url.params for request in emby.requests)

@@ -66,6 +66,14 @@ def upcoming_events(conn: sqlite3.Connection, since: str, limit: int) -> list[sq
     ).fetchall()
 
 
+def past_events(conn: sqlite3.Connection, before: str, limit: int) -> list[sqlite3.Row]:
+    return conn.execute(
+        f"{_SELECT_EVENT} WHERE e.status = 'published' AND e.starts_at < ? "
+        "ORDER BY e.starts_at DESC, e.id DESC LIMIT ?",
+        (before, limit),
+    ).fetchall()
+
+
 def upsert_rsvp(conn: sqlite3.Connection, fields: dict) -> None:
     with conn:
         conn.execute(

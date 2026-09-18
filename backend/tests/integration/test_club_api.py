@@ -144,3 +144,23 @@ def test_missing_art_is_not_cached(api):
     response = api.get("/api/club-art/nope.webp")
     assert response.status_code == 404
     assert "immutable" not in response.headers.get("cache-control", "")
+
+
+async def _build_mosaic(api, fake_emby, data_dir):
+    from criterion.club import mosaic
+
+    fake_emby.collections["C"] = [("m1", "a"), ("m2", "b")]
+    return await mosaic.refresh(fake_emby, "C", data_dir, api.app.state.conn)
+
+
+def test_site_has_no_mosaic_until_one_is_built(api):
+    assert api.get("/api/site").json()["mosaic"] is None
+
+
+def test_site_points_at_the_built_mosaic(api, fake_emby, data_dir):
+    import asyncio
+
+    built = asyncio.run(_build_mosaic(api, fake_emby, data_dir))
+    site = api.get("/api/site").json()["mosaic"]
+    assert site["url"] == f"/api/club-art/mosaic-{built['version']}.webp"
+    assert api.get(site["url"]).status_code == 200

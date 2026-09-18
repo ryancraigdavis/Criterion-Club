@@ -55,6 +55,12 @@ options all share the same cached image.
 **Screenings** show on the club page from the moment they're published until four hours after they
 start. RSVPs are private: no names and no counts on the public side, the full list on the dashboard.
 
+**The poster mosaic** behind the top of the club page is every poster in the Emby collection named
+by `MOSAIC_COLLECTION`, blurred and drifting slowly upwards (it holds still for anyone who has asked
+their device to reduce motion). A background job builds it 30 seconds after the API starts and checks
+again daily; it only downloads posters when the collection has actually changed, and the page itself
+never waits on Emby. **What we've watched** lists the screenings that have finished.
+
 **Polls** are optional. One runs at a time; results appear once it's closed and stay for two weeks.
 Signed-out votes are tied to a random id kept in the browser, which is an honour system.
 
@@ -91,13 +97,14 @@ worker: the throttles live in memory and there is one shared SQLite connection.
 | Method | Path | Auth | Notes |
 |---|---|---|---|
 | GET | `/api/health` | — | `{status, emby_ok}`; asks Emby live every time |
-| GET | `/api/site` | — | Emby address for the outbound links |
+| GET | `/api/site` | — | Emby address for the outbound links, and the poster mosaic (`{url, width, height}` or `null`) |
 | POST | `/api/club/login` | — | `{username, password}` → sets the cookie |
 | POST | `/api/club/logout` | — | clears the cookie |
 | GET | `/api/club/me` | — | `{name, admin}` |
 | GET | `/api/club/films?q=` | — | live Emby search, 8 results, two-character minimum |
 | GET | `/api/club/next` | — | the next published screening, or `null` |
 | GET | `/api/club/schedule` | — | the screenings after that one |
+| GET | `/api/club/past?limit=` | — | published screenings that have finished, newest first (24 by default, 60 at most) |
 | GET | `/api/club/settings` | — | `{show_schedule}` |
 | GET | `/api/club/poll` | — | the open poll, or a recently closed one with results |
 | POST | `/api/club/votes` | — | one vote per person per poll |
@@ -124,6 +131,7 @@ worker: the throttles live in memory and there is one shared SQLite connection.
 | `EMBY_PUBLIC_URL` | `EMBY_SERVER_URL` | what the "Emby" links point at |
 | `DATA_DIR` | `./data` | holds `club.db` and `club-art/` |
 | `FRONTEND_ORIGIN` | `http://localhost:5273` | CORS and the same-site check |
+| `MOSAIC_COLLECTION` | `The Criterion Collection` | the Emby collection behind the club page's poster mosaic; empty turns it off |
 | `LOG_LEVEL` / `LOG_JSON` | `INFO` / `false` | level is case-insensitive; a typo fails startup |
 
 ## Screenshot tool

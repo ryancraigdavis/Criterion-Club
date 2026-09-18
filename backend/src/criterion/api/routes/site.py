@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Request
 
-from criterion.api.deps import emby_of, settings_of
+from criterion.api.deps import conn_of, emby_of, settings_of
+from criterion.club import mosaic
 
 router = APIRouter(tags=["site"])
 
@@ -15,4 +16,5 @@ async def site(request: Request) -> dict:
     return {
         "emby_url": settings_of(request).emby_public,
         "emby_server_id": await emby_of(request).server_id(),
+        "mosaic": mosaic.public(conn_of(request)),
     }

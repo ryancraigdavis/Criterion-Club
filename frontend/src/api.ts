@@ -1,13 +1,21 @@
 import { API_BASE } from './config'
 
+export interface SiteMosaic {
+  url: string
+  width: number
+  height: number
+}
+
 export interface SiteInfo {
   embyUrl: string
   embyServerId: string | null
+  mosaic: SiteMosaic | null
 }
 
 interface RawSite {
   emby_url: string
   emby_server_id: string | null
+  mosaic?: SiteMosaic | null
 }
 
 export class ApiError extends Error {
@@ -43,9 +51,13 @@ export function postJson<T>(path: string, payload: unknown = {}): Promise<T> {
   })
 }
 
+export function toSite(raw: RawSite): SiteInfo {
+  const mosaic = raw.mosaic ? { ...raw.mosaic, url: `${API_BASE}${raw.mosaic.url}` } : null
+  return { embyUrl: raw.emby_url, embyServerId: raw.emby_server_id, mosaic }
+}
+
 export async function fetchSite(): Promise<SiteInfo> {
-  const raw = await sendJson<RawSite>('/api/site')
-  return { embyUrl: raw.emby_url, embyServerId: raw.emby_server_id }
+  return toSite(await sendJson<RawSite>('/api/site'))
 }
 
 export function embyHomeUrl(site: SiteInfo): string {

@@ -21,6 +21,10 @@ def _is_admin(user: dict) -> bool:
     return bool((user.get("Policy") or {}).get("IsAdministrator"))
 
 
+def _name(item: dict) -> str:
+    return str(item.get("Name") or "").strip().casefold()
+
+
 def _runtime_minutes(ticks: int | None) -> int | None:
     return None if ticks is None else round(ticks / TICKS_PER_MINUTE)
 
@@ -119,6 +123,38 @@ class EmbyClient:
     async def lookup(self, item_id: str) -> Film | None:
         items = await self._items({"Ids": item_id, "Limit": 1})
         return next((film_of(raw) for raw in items), None)
+
+    async def _boxset_id(self, name: str) -> str | None:
+        uid = await self.user_id()
+        page = await self._get_json(
+            f"/Users/{uid}/Items",
+            {"IncludeItemTypes": "BoxSet", "Recursive": "true", "SearchTerm": name},
+        )
+        wanted = name.strip().casefold()
+        named = (item for item in page.get("Items", []) if _name(item) == wanted)
+        return next((str(item["Id"]) for item in named), None)
+
+    async def _members(self, boxset: str) -> list[dict]:
+        uid = await self.user_id()
+        page = await self._get_json(
+            f"/Users/{uid}/Items",
+            {
+                "ParentId": boxset,
+                "IncludeItemTypes": "Movie",
+                "Recursive": "true",
+                "EnableImageTypes": "Primary",
+                "ImageTypeLimit": 1,
+            },
+        )
+        return list(page.get("Items", []))
+
+    async def collection_posters(self, name: str) -> list[tuple[str, str]]:
+        boxset = await self._boxset_id(name)
+        members = await self._members(boxset) if boxset else []
+        tagged = (
+            (str(item["Id"]), (item.get("ImageTags") or {}).get("Primary")) for item in members
+        )
+        return [(item_id, tag) for item_id, tag in tagged if tag]
 
     async def image_bytes(self, item_id: str, tag: str, max_width: int) -> bytes | None:
         try:

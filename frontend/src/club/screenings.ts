@@ -4,37 +4,52 @@ import type { ScreeningPayload } from './draft'
 import { afterFailure, type LoadStatus } from './load'
 import {
   type AdminScreening,
+  type PastScreening,
   type RawAdminScreening,
+  type RawPastScreening,
   type RawScreening,
   type Screening,
   toAdminScreening,
+  toPastScreening,
   toScreening,
 } from './types'
 
 const SCHEDULE_LIMIT = 6
+const PAST_LIMIT = 24
 
 interface ScreeningsState {
   next: Screening | null
   schedule: Screening[]
+  past: PastScreening[]
   status: LoadStatus
   refresh: () => Promise<void>
   retry: () => Promise<void>
 }
 
-async function loadPublic(): Promise<Pick<ScreeningsState, 'next' | 'schedule'>> {
-  const [next, schedule] = await Promise.all([
+async function loadPast(): Promise<PastScreening[]> {
+  const body = await sendJson<{ screenings: RawPastScreening[] }>(
+    `/api/club/past?limit=${PAST_LIMIT}`,
+  )
+  return body.screenings.map(toPastScreening)
+}
+
+async function loadPublic(): Promise<Pick<ScreeningsState, 'next' | 'schedule' | 'past'>> {
+  const [next, schedule, past] = await Promise.all([
     sendJson<{ screening: RawScreening | null }>('/api/club/next'),
     sendJson<{ screenings: RawScreening[] }>(`/api/club/schedule?limit=${SCHEDULE_LIMIT}`),
+    loadPast().catch(() => []),
   ])
   return {
     next: next.screening === null ? null : toScreening(next.screening),
     schedule: schedule.screenings.map(toScreening),
+    past,
   }
 }
 
 export const useScreenings = create<ScreeningsState>((set, get) => ({
   next: null,
   schedule: [],
+  past: [],
   status: 'loading',
   refresh: async () => {
     await loadPublic().then(

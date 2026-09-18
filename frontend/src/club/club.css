@@ -1281,3 +1281,119 @@ textarea.field__input {
   max-width: 560px;
   margin: 16px auto 0;
 }
+
+/* A band behind the header and the next screening that fades into the page, so everything further
+   down sits on plain ground and keeps its contrast. */
+.mosaic {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: -1;
+  height: min(820px, 92lvh);
+  overflow: hidden;
+  pointer-events: none;
+  mask-image: linear-gradient(#000 45%, transparent);
+}
+
+.mosaic::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgb(246 246 246 / 0.68);
+}
+
+.mosaic__strip {
+  --mosaic-width: max(100vw, 1100px);
+  --mosaic-tile: calc(var(--mosaic-width) * var(--mosaic-ratio));
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: var(--mosaic-width);
+  height: calc(100% + var(--mosaic-tile));
+  translate: -50% 0;
+  background-image: var(--mosaic-url);
+  background-repeat: repeat-y;
+  background-size: 100% auto;
+  animation: mosaic-drift 240s linear infinite;
+  will-change: transform;
+}
+
+@keyframes mosaic-drift {
+  to {
+    transform: translate3d(0, calc(-1 * var(--mosaic-tile)), 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mosaic__strip {
+    animation: none;
+  }
+}
+
+.watched {
+  margin-top: 40px;
+}
+
+.watched__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 24px 18px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.watched__film {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+}
+
+.watched__film p {
+  margin: 0;
+}
+
+.watched__poster {
+  display: block;
+  border-radius: var(--radius-sm);
+}
+
+.watched__poster img,
+.watched__blank {
+  display: block;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 4px 14px rgb(0 0 0 / 0.14);
+}
+
+.watched__blank {
+  display: grid;
+  place-items: center;
+  padding: 10px;
+  font: 400 15px / 1.2 var(--font-serif);
+  text-align: center;
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+a.watched__poster:hover img {
+  box-shadow:
+    0 0 0 2px var(--highlight),
+    0 6px 18px rgb(0 0 0 / 0.18);
+}
+
+.watched__title {
+  font: 400 16px / 1.25 var(--font-serif);
+  color: var(--text);
+}
+
+.watched__date {
+  font: 500 11px / 1 var(--font-display);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}

@@ -1,5 +1,6 @@
+import asyncio
 from collections.abc import AsyncIterator
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, suppress
 
 import structlog
 from fastapi import FastAPI
@@ -16,6 +17,7 @@ from criterion.api.routes import (
     site,
 )
 from criterion.api.routes.static import mount_static
+from criterion.club import mosaic
 from criterion.club.throttle import Throttle
 from criterion.config import Settings, get_settings
 from criterion.db.connection import connect
@@ -23,6 +25,18 @@ from criterion.emby.client import EmbyClient
 from criterion.logging import configure_logging
 
 log = structlog.get_logger()
+
+
+def _start_mosaic(settings: Settings, emby: EmbyClient, conn) -> asyncio.Task | None:
+    name = settings.mosaic_collection.strip()
+    job = mosaic.keep_fresh(emby, name, settings.data_dir, conn) if name else None
+    return asyncio.create_task(job) if job else None
+
+
+async def _stop(task: asyncio.Task | None) -> None:
+    task.cancel() if task else None
+    with suppress(asyncio.CancelledError):
+        await task if task else None
 
 
 def _lifespan(settings: Settings, client: EmbyClient | None):
@@ -41,8 +55,11 @@ def _lifespan(settings: Settings, client: EmbyClient | None):
             sign_in=bool(settings.session_secret),
             admins=len(settings.club_admin_names),
             secure_cookies=settings.secure_cookies,
+            mosaic=settings.mosaic_collection or None,
         )
+        mosaic_task = _start_mosaic(settings, emby, conn)
         yield
+        await _stop(mosaic_task)
         await emby.close()
         conn.close()
 

@@ -33,6 +33,17 @@ def public(row: sqlite3.Row) -> dict:
     }
 
 
+def past(row: sqlite3.Row) -> dict:
+    return {
+        "id": row["id"],
+        "title": row["title"],
+        "year": row["year"],
+        "starts_at": row["starts_at"],
+        "item_id": row["item_id"],
+        "poster_url": poster_url(row),
+    }
+
+
 def admin(row: sqlite3.Row) -> dict:
     return {
         **public(row),

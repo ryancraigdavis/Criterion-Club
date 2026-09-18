@@ -62,6 +62,16 @@ export function screeningWhen(iso: string, now: Date, timeZone?: string): string
   return `${day} · ${screeningTime(iso, timeZone)}`
 }
 
+export function watchedOn(iso: string, now: Date, timeZone?: string): string {
+  const sameYear = fields(new Date(iso), timeZone).year === fields(now, timeZone).year
+  return new Intl.DateTimeFormat(LOCALE, {
+    timeZone,
+    month: 'short',
+    day: 'numeric',
+    year: sameYear ? undefined : 'numeric',
+  }).format(new Date(iso))
+}
+
 export function dayMonth(iso: string, timeZone?: string): string {
   return new Intl.DateTimeFormat(LOCALE, { timeZone, month: 'short', day: 'numeric' }).format(
     new Date(iso),

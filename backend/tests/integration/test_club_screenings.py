@@ -171,3 +171,34 @@ def test_a_screening_keeps_showing_when_emby_goes_away(admin, fake_emby):
     screening = admin.get("/api/club/next").json()["screening"]
     assert (screening["title"], screening["runtime_min"]) == ("There Will Be Blood", 158)
     assert screening["poster_url"].startswith("/api/club-art/")
+
+
+def test_past_screenings_are_published_ones_newest_first(admin):
+    _create(admin, title="Upcoming", starts_at=_at(48))
+    _create(admin, title="Still showing", starts_at=_at(-1))
+    older = _create(admin, title="Older", starts_at=_at(-24 * 60))
+    newer = _create(admin, title="Newer", starts_at=_at(-24 * 30))
+    _create(admin, title="Never shown", starts_at=_at(-24 * 10), status="draft")
+    _create(admin, title="Called off", starts_at=_at(-24 * 20), status="cancelled")
+    past = admin.get("/api/club/past").json()["screenings"]
+    assert [s["id"] for s in past] == [newer["id"], older["id"]]
+
+
+def test_past_screenings_show_only_public_fields(admin):
+    _create(admin, item_id="m1", starts_at=_at(-24 * 7), message="Bring snacks")
+    admin.post("/api/club/logout")
+    (screening,) = admin.get("/api/club/past").json()["screenings"]
+    assert set(screening) == {"id", "title", "year", "starts_at", "item_id", "poster_url"}
+    assert screening["poster_url"].startswith("/api/club-art/")
+
+
+@pytest.mark.parametrize(
+    ("limit", "status"),
+    [
+        pytest.param(1, 200, id="smallest"),
+        pytest.param(0, 422, id="zero"),
+        pytest.param(61, 422, id="too-many"),
+    ],
+)
+def test_past_limit_is_bounded(api, limit, status):
+    assert api.get(f"/api/club/past?limit={limit}").status_code == status

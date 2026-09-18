@@ -33,6 +33,7 @@ class FakeEmby:
         self.down = False
         self.search_calls: list[str] = []
         self.image_calls: list[tuple[str, str]] = []
+        self.collections: dict[str, list[tuple[str, str]]] = {}
 
     def _answer(self) -> None:
         if self.down:
@@ -63,6 +64,10 @@ class FakeEmby:
     async def lookup(self, item_id: str) -> Film | None:
         self._answer()
         return next((film_of(raw) for raw in self.films if raw["Id"] == item_id), None)
+
+    async def collection_posters(self, name: str) -> list[tuple[str, str]]:
+        self._answer()
+        return list(self.collections.get(name, []))
 
     async def image_bytes(self, item_id: str, tag: str, max_width: int) -> bytes | None:
         self._answer()
@@ -100,6 +105,7 @@ def settings(data_dir: Path) -> Settings:
         data_dir=data_dir,
         session_secret="test-session-secret",
         club_admins="Ryan",
+        mosaic_collection="",
     )
 
 

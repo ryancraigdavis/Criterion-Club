@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     session_secret: str = ""
     club_admins: str = ""
     secure_cookies: bool = False
+    mosaic_collection: str = "The Criterion Collection"
 
     @property
     def emby_base(self) -> str:

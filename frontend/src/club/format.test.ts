@@ -8,6 +8,7 @@ import {
   screeningTime,
   screeningWhen,
   toLocalInput,
+  watchedOn,
 } from './format'
 
 const CHICAGO = 'America/Chicago'
@@ -69,5 +70,15 @@ describe('datetime-local inputs', () => {
     ['2026-13-40T99:99', null],
   ])('rejects %j', (value, expected) => {
     expect(fromLocalInput(value)).toBe(expected)
+  })
+})
+
+describe('watchedOn', () => {
+  it.each([
+    ['this year', '2026-08-20T01:00:00Z', 'Aug 19'],
+    ['last year', '2025-12-13T02:00:00Z', 'Dec 12, 2025'],
+    ['new year in Chicago, still December in UTC terms', '2026-01-01T03:00:00Z', 'Dec 31, 2025'],
+  ] as const)('%s', (_name, iso, expected) => {
+    expect(watchedOn(iso, now(FRIDAY_730PM), CHICAGO)).toBe(expected)
   })
 })

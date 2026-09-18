@@ -69,6 +69,35 @@ export interface RawScreening {
   runtime_min: number | null
 }
 
+export interface RawPastScreening {
+  id: number
+  title: string
+  year: number | null
+  starts_at: string
+  item_id: string | null
+  poster_url: string | null
+}
+
+export interface PastScreening {
+  id: number
+  title: string
+  year: number | null
+  startsAt: string
+  itemId: string | null
+  posterUrl: string | null
+}
+
+export function toPastScreening(raw: RawPastScreening): PastScreening {
+  return {
+    id: raw.id,
+    title: raw.title,
+    year: raw.year,
+    startsAt: raw.starts_at,
+    itemId: raw.item_id,
+    posterUrl: raw.poster_url === null ? null : `${API_BASE}${raw.poster_url}`,
+  }
+}
+
 export interface RawAdminScreening extends RawScreening {
   status: ScreeningStatus
   art_url: string | null
