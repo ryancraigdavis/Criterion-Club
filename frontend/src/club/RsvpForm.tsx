@@ -1,8 +1,10 @@
 import './club.css'
-import { type FormEvent, useEffect, useMemo, useState } from 'react'
-import { Choice, Field, failureText } from './Field'
+import { type FormEvent, useEffect, useState } from 'react'
+import { Choice, Field } from './Field'
+import { failureText } from './failure'
 import { screeningWhen } from './format'
 import { fetchMyRsvp, sendRsvp } from './members'
+import { useNow } from './now'
 import {
   ANSWERS,
   confirmation,
@@ -151,7 +153,7 @@ function RsvpFields(props: FieldsProps) {
 }
 
 function ScreeningLine({ screening }: { screening: Screening }) {
-  const now = useMemo(() => new Date(), [])
+  const now = useNow()
   return (
     <p className="rsvp__for">
       <strong>{screening.title}</strong>

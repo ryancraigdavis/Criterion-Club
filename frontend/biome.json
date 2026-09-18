@@ -43,23 +43,5 @@
       "semicolons": "asNeeded",
       "trailingCommas": "all"
     }
-  },
-  "overrides": [
-    {
-      "includes": [
-        "src/lobby/**",
-        "src/store/**",
-        "src/ui3d/**",
-        "src/shell/**",
-        "src/ui/TouchControls.tsx"
-      ],
-      "linter": {
-        "rules": {
-          "a11y": {
-            "noStaticElementInteractions": "off"
-          }
-        }
-      }
-    }
-  ]
+  }
 }

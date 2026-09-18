@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { postJson, sendJson } from '../api'
 import type { ScreeningPayload } from './draft'
+import { afterFailure, type LoadStatus } from './load'
 import {
   type AdminScreening,
   type RawAdminScreening,
@@ -15,8 +16,9 @@ const SCHEDULE_LIMIT = 6
 interface ScreeningsState {
   next: Screening | null
   schedule: Screening[]
-  known: boolean
+  status: LoadStatus
   refresh: () => Promise<void>
+  retry: () => Promise<void>
 }
 
 async function loadPublic(): Promise<Pick<ScreeningsState, 'next' | 'schedule'>> {
@@ -30,13 +32,19 @@ async function loadPublic(): Promise<Pick<ScreeningsState, 'next' | 'schedule'>>
   }
 }
 
-export const useScreenings = create<ScreeningsState>((set) => ({
+export const useScreenings = create<ScreeningsState>((set, get) => ({
   next: null,
   schedule: [],
-  known: false,
+  status: 'loading',
   refresh: async () => {
-    const loaded = await loadPublic().catch(() => ({ next: null, schedule: [] }))
-    set({ ...loaded, known: true })
+    await loadPublic().then(
+      (loaded) => set({ ...loaded, status: 'ready' }),
+      () => set((state) => ({ status: afterFailure(state.status) })),
+    )
+  },
+  retry: () => {
+    set({ status: 'loading' })
+    return get().refresh()
   },
 }))
 

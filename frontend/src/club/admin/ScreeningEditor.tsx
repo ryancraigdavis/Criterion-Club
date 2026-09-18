@@ -9,8 +9,9 @@ import {
   withFilm,
   withoutFilm,
 } from '../draft'
-import { Choice, Field, failureText } from '../Field'
+import { Choice, Field } from '../Field'
 import { FilmFields } from '../FilmPicker'
+import { failureText } from '../failure'
 import { ScreeningCard } from '../ScreeningCard'
 import { deleteScreening, saveScreening } from '../screenings'
 import type { AdminScreening, ScreeningStatus } from '../types'
@@ -38,14 +39,14 @@ export function ScreeningEditor({ screening, onDone }: Props) {
   const preview = draftPreview(draft)
   const set = (patch: Partial<Draft>) => setDraft((current) => ({ ...current, ...patch }))
 
-  const run = async (work: () => Promise<unknown>) => {
+  const run = async (work: () => Promise<unknown>, action: string) => {
     setBusy(true)
     setFailure(null)
     try {
       await work()
       onDone()
     } catch (error) {
-      setFailure(failureText(error, 'save that screening'))
+      setFailure(failureText(error, action))
       setBusy(false)
     }
   }
@@ -54,13 +55,16 @@ export function ScreeningEditor({ screening, onDone }: Props) {
     event.preventDefault()
     setChecked(true)
     const ready = Object.keys(problems).length === 0 && !busy
-    return ready ? run(() => saveScreening(screening?.id ?? null, draftPayload(draft))) : undefined
+    const payload = draftPayload(draft)
+    return ready
+      ? run(() => saveScreening(screening?.id ?? null, payload), 'save that screening')
+      : undefined
   }
 
   const remove = () => {
     const sure =
       screening !== null && window.confirm(`Delete “${screening.title}”? This can’t be undone.`)
-    return sure ? run(() => deleteScreening(screening.id)) : undefined
+    return sure ? run(() => deleteScreening(screening.id), 'delete that screening') : undefined
   }
 
   return (

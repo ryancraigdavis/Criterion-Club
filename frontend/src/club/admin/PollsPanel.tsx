@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
-import { failureText } from '../Field'
+import { useFailure } from '../failure'
 import { markSuggestion } from '../members'
-import { type PollAction, pollActions, type Tally, tally } from '../poll'
-import { deletePoll, fetchAdminPolls, movePoll, saveBoardSchedule, usePoll } from '../polls'
+import { type PollAction, pollActions, type Tally, tally, waitingOnOpenPoll } from '../poll'
+import { deletePoll, fetchAdminPolls, movePoll, usePoll } from '../polls'
 import type { AdminPoll, AdminPollOption } from '../types'
 import { PollEditor } from './PollEditor'
 
@@ -18,27 +18,15 @@ const ACTION_LABELS: Record<PollAction, string> = {
   delete: 'Delete',
 }
 
-function BoardSwitch() {
-  const show = usePoll((state) => state.boardSchedule)
-  const [busy, setBusy] = useState(false)
-  const toggle = () => {
-    setBusy(true)
-    saveBoardSchedule(!show).finally(() => setBusy(false))
-  }
-  return (
-    <label className="switch">
-      <input type="checkbox" checked={show} disabled={busy} onChange={toggle} />
-      <span>Show the upcoming dates on the club page</span>
-    </label>
-  )
-}
-
 function TallyRow({ row, closed }: { row: Tally<AdminPollOption>; closed: boolean }) {
   const [marked, setMarked] = useState(false)
+  const [failure, run] = useFailure()
   const suggestionId = row.option.suggestionId
   const schedulable = closed && row.leading && suggestionId !== null
   const schedule = () => {
-    void markSuggestion(suggestionId ?? 0, 'scheduled').then(() => setMarked(true))
+    void run(() => markSuggestion(suggestionId ?? 0, 'scheduled'), 'mark the suggestion').then(
+      setMarked,
+    )
   }
   return (
     <li className={row.leading ? 'result result--leading' : 'result'}>
@@ -58,6 +46,7 @@ function TallyRow({ row, closed }: { row: Tally<AdminPollOption>; closed: boolea
         {row.option.voters.length === 0 ? null : (
           <span className="result__voters">{row.option.voters.join(', ')}</span>
         )}
+        {failure === null ? null : <span className="field__problem">{failure}</span>}
       </div>
       {schedulable ? (
         <button type="button" className="chip" disabled={marked} onClick={schedule}>
@@ -76,17 +65,17 @@ interface RowProps {
 }
 
 function PollRow({ poll, anotherOpen, onEdit, onChanged }: RowProps) {
-  const [failure, setFailure] = useState<string | null>(null)
-  const run = (work: () => Promise<unknown>) =>
-    work().then(onChanged, (error: unknown) => setFailure(failureText(error, 'update the poll')))
+  const [failure, run] = useFailure()
+  const change = (work: () => Promise<unknown>) =>
+    void run(work, 'update the poll').then((ok) => (ok ? onChanged() : undefined))
   const handlers: Record<PollAction, () => void> = {
     edit: onEdit,
-    open: () => run(() => movePoll(poll.id, 'open')),
-    close: () => run(() => movePoll(poll.id, 'closed')),
-    reopen: () => run(() => movePoll(poll.id, 'open')),
+    open: () => change(() => movePoll(poll.id, 'open')),
+    close: () => change(() => movePoll(poll.id, 'closed')),
+    reopen: () => change(() => movePoll(poll.id, 'open')),
     delete: () =>
       window.confirm(`Delete the poll “${poll.question}” and its votes?`)
-        ? run(() => deletePoll(poll.id))
+        ? change(() => deletePoll(poll.id))
         : undefined,
   }
   return (
@@ -106,6 +95,9 @@ function PollRow({ poll, anotherOpen, onEdit, onChanged }: RowProps) {
         ))}
       </ul>
       {failure === null ? null : <p className="club-form__problem">{failure}</p>}
+      {waitingOnOpenPoll(poll.status, anotherOpen) ? (
+        <p className="club-form__hint">Close the open poll before opening this one.</p>
+      ) : null}
       <div className="slate__buttons">
         {pollActions(poll.status, anotherOpen).map((action) => (
           <button key={action} type="button" className="chip" onClick={handlers[action]}>
@@ -130,14 +122,12 @@ function EditorSlot({ editing, onDone }: { editing: Editing; onDone: () => void 
 export function PollsPanel() {
   const [polls, setPolls] = useState<AdminPoll[] | null>(null)
   const [editing, setEditing] = useState<Editing>(null)
-  const [failure, setFailure] = useState<string | null>(null)
+  const [failure, run] = useFailure()
 
   const load = useCallback(() => {
-    fetchAdminPolls().then(setPolls, (error: unknown) =>
-      setFailure(failureText(error, 'load polls')),
-    )
+    void run(() => fetchAdminPolls().then(setPolls), 'load the polls')
     void usePoll.getState().refresh()
-  }, [])
+  }, [run])
 
   useEffect(load, [load])
 
@@ -159,7 +149,6 @@ export function PollsPanel() {
           </button>
         ) : null}
       </header>
-      <BoardSwitch />
       <EditorSlot editing={editing} onDone={done} />
       {failure === null ? null : <p className="club-form__problem">{failure}</p>}
       {empty ? (

@@ -24,7 +24,7 @@ function Dashboard() {
     <>
       <header className="dashboard__head">
         <div>
-          <p className="dashboard__kicker">Movie club</p>
+          <p className="dashboard__kicker">Criterion Club</p>
           <h1 className="dashboard__title">Dashboard</h1>
         </div>
         <AccountCard dashboardLink={false} />
@@ -40,11 +40,11 @@ const VIEWS: Record<DashboardView, () => ReactNode> = {
   checking: () => (
     <div className="status">
       <div className="reel" aria-hidden="true" />
-      <p className="status__detail">Checking your pass…</p>
+      <p className="status__detail">Checking who’s signed in…</p>
     </div>
   ),
   'sign-in': () => (
-    <Gate title="Club admins" detail="Sign in with your Emby account to run the movie club.">
+    <Gate title="Club admins" detail="Sign in with your Emby account to run the club.">
       <SignInForm autoFocus />
     </Gate>
   ),

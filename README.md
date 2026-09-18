@@ -98,7 +98,7 @@ worker: the throttles live in memory and there is one shared SQLite connection.
 | GET | `/api/club/films?q=` | — | live Emby search, 8 results, two-character minimum |
 | GET | `/api/club/next` | — | the next published screening, or `null` |
 | GET | `/api/club/schedule` | — | the screenings after that one |
-| GET | `/api/club/settings` | — | `{board_schedule}` |
+| GET | `/api/club/settings` | — | `{show_schedule}` |
 | GET | `/api/club/poll` | — | the open poll, or a recently closed one with results |
 | POST | `/api/club/votes` | — | one vote per person per poll |
 | GET/POST | `/api/club/rsvp` | — | answer or change an answer |
@@ -109,7 +109,7 @@ worker: the throttles live in memory and there is one shared SQLite connection.
 | POST | `/api/club/admin/rsvps/{id}/delete` | admin | remove an RSVP |
 | GET/POST | `/api/club/admin/suggestions[/{id}][/delete]` | admin | the inbox and its statuses |
 | GET/POST | `/api/club/admin/polls[/{id}][/delete]` | admin | build, open and close polls |
-| POST | `/api/club/admin/settings` | admin | the upcoming-dates switch |
+| POST | `/api/club/admin/settings` | admin | `{show_schedule}`: the "Coming up" switch |
 | GET | `/api/club-art/{version}.webp` | — | cached poster (`-t` for the thumb) |
 
 ## Configuration

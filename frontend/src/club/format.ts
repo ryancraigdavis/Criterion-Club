@@ -62,18 +62,6 @@ export function screeningWhen(iso: string, now: Date, timeZone?: string): string
   return `${day} · ${screeningTime(iso, timeZone)}`
 }
 
-export function boardDate(iso: string, timeZone?: string): string {
-  return new Intl.DateTimeFormat(LOCALE, {
-    timeZone,
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-  })
-    .format(new Date(iso))
-    .replace(',', '')
-    .toUpperCase()
-}
-
 export function dayMonth(iso: string, timeZone?: string): string {
   return new Intl.DateTimeFormat(LOCALE, { timeZone, month: 'short', day: 'numeric' }).format(
     new Date(iso),

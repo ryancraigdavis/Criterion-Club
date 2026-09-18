@@ -1,6 +1,6 @@
 import './club.css'
-import { useMemo } from 'react'
 import { formatRuntime, relativeDay, screeningWhen } from './format'
+import { useNow } from './now'
 import type { Screening } from './types'
 
 interface Props {
@@ -10,7 +10,7 @@ interface Props {
 }
 
 export function ScreeningCard({ screening, kicker = 'Next screening', compact = false }: Props) {
-  const now = useMemo(() => new Date(), [])
+  const now = useNow()
   const soon = relativeDay(screening.startsAt, now)
   const details = [
     screeningWhen(screening.startsAt, now),

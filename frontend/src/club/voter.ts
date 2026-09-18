@@ -1,4 +1,4 @@
-const KEY = 'twbc-voter'
+const KEY = 'criterion-voter'
 
 function freshId(): string {
   const bytes = new Uint8Array(18)

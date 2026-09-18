@@ -56,13 +56,6 @@ select {
   border: 0;
 }
 
-.field-label {
-  font: 500 11px / 1 var(--font-display);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
 .external-mark {
   font-size: 0.85em;
   opacity: 0.8;
@@ -170,8 +163,7 @@ select {
   background: rgb(252 204 12 / 0.1);
 }
 
-.status,
-.empty {
+.status {
   display: grid;
   justify-items: center;
   gap: 12px;
@@ -179,21 +171,11 @@ select {
   text-align: center;
 }
 
-.status p,
-.empty p {
+.status p {
   margin: 0;
 }
 
-.status__title,
-.empty__title {
-  font: 500 22px / 1.2 var(--font-display);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--gold);
-}
-
-.status__detail,
-.empty__hint {
+.status__detail {
   color: var(--text-muted);
 }
 
@@ -219,7 +201,7 @@ select {
   place-content: center;
   justify-items: center;
   gap: 14px;
-  min-height: 100vh;
+  min-height: 60vh;
   padding: 32px var(--gutter);
   text-align: center;
 }
@@ -227,12 +209,6 @@ select {
 .notice p,
 .notice h1 {
   margin: 0;
-}
-
-.notice__kicker {
-  font: 600 64px / 1 var(--font-display);
-  letter-spacing: 0.06em;
-  color: var(--rust-bright);
 }
 
 .notice__title {

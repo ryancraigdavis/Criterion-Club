@@ -1,12 +1,14 @@
 import '../club/club.css'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import { screeningDate, screeningTime } from '../club/format'
+import { type ClubLead, clubLead } from '../club/load'
 import { PollVote } from '../club/PollVote'
 import { usePoll } from '../club/polls'
 import { RsvpForm } from '../club/RsvpForm'
 import { ScreeningCard } from '../club/ScreeningCard'
 import { SuggestionForm } from '../club/SuggestionForm'
 import { laterScreenings, useScreenings } from '../club/screenings'
+import { useSettings } from '../club/settings'
 import type { Screening } from '../club/types'
 import { SiteHeader } from '../ui/SiteHeader'
 
@@ -66,19 +68,43 @@ function NothingScheduled() {
   )
 }
 
+function LoadFailed() {
+  const retry = useScreenings((state) => state.retry)
+  return (
+    <section className="club-gate" role="alert">
+      <h2 className="club-gate__title">Couldn’t reach the club</h2>
+      <p className="club-gate__detail">
+        The schedule didn’t load. Check your connection and try again.
+      </p>
+      <button type="button" className="button" onClick={() => void retry()}>
+        Try again
+      </button>
+    </section>
+  )
+}
+
+function Lead({ lead, next }: { lead: ClubLead; next: Screening | null }) {
+  const views: Record<ClubLead, () => ReactNode> = {
+    loading: () => <div className="reel club-page__loading" role="status" aria-label="Loading" />,
+    failed: () => <LoadFailed />,
+    nothing: () => <NothingScheduled />,
+    screening: () => (next === null ? null : <ScreeningCard screening={next} />),
+  }
+  return views[lead]()
+}
+
+const PANEL_TITLES = { rsvp: 'RSVP', suggest: 'Suggest a film' } as const
+
 function ClubPanel({ panel, onClose }: { panel: Exclude<Panel, null>; onClose: () => void }) {
   const ref = useRef<HTMLElement>(null)
   useEffect(() => {
+    ref.current?.focus({ preventScroll: true })
     ref.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
   }, [])
   return (
-    <section
-      ref={ref}
-      className="club-panel"
-      aria-label={panel.kind === 'rsvp' ? 'RSVP' : 'Suggest a film'}
-    >
+    <section ref={ref} className="club-panel" aria-label={PANEL_TITLES[panel.kind]} tabIndex={-1}>
       <header className="sheet__head">
-        <h2 className="sheet__title">{panel.kind === 'rsvp' ? 'RSVP' : 'Suggestion box'}</h2>
+        <h2 className="sheet__title">{PANEL_TITLES[panel.kind]}</h2>
         <button type="button" className="chip" onClick={onClose}>
           Close
         </button>
@@ -122,22 +148,17 @@ function panelKey(panel: Exclude<Panel, null>): string {
 export function ClubPage() {
   const next = useScreenings((state) => state.next)
   const schedule = useScreenings((state) => state.schedule)
-  const known = useScreenings((state) => state.known)
+  const status = useScreenings((state) => state.status)
   const [panel, setPanel] = useState<Panel>(null)
   const later = useMemo(() => laterScreenings(schedule, next), [schedule, next])
-  const showLater = usePoll((state) => state.boardSchedule)
-  const lead = next === null ? <NothingScheduled /> : <ScreeningCard screening={next} />
+  const showLater = useSettings((state) => state.showSchedule)
   return (
     <>
       <SiteHeader />
       <main className="club-page">
-        <h1 className="club-page__title">Movie club</h1>
-        {known ? (
-          lead
-        ) : (
-          <div className="reel club-page__loading" role="status" aria-label="Loading" />
-        )}
-        <Actions next={next} onOpen={setPanel} />
+        <h1 className="visually-hidden">Criterion Club</h1>
+        <Lead lead={clubLead(status, next !== null)} next={next} />
+        {status === 'ready' ? <Actions next={next} onOpen={setPanel} /> : null}
         {panel === null ? null : (
           <ClubPanel key={panelKey(panel)} panel={panel} onClose={() => setPanel(null)} />
         )}

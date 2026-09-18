@@ -3,6 +3,7 @@ import { Link, Route, Routes } from 'react-router'
 import { usePoll } from './club/polls'
 import { useScreenings } from './club/screenings'
 import { useClubSession } from './club/session'
+import { useSettings } from './club/settings'
 import { useSite } from './club/site'
 import { AdminPage } from './pages/AdminPage'
 import { ClubPage } from './pages/ClubPage'
@@ -25,12 +26,23 @@ function NotFound() {
   )
 }
 
+function refreshClub() {
+  void useScreenings.getState().refresh()
+  void usePoll.getState().refresh()
+  void useSettings.getState().refresh()
+}
+
+function refreshWhenVisible() {
+  return document.visibilityState === 'visible' ? refreshClub() : undefined
+}
+
 export function App() {
   useEffect(() => {
     void useClubSession.getState().refresh()
-    void useScreenings.getState().refresh()
-    void usePoll.getState().refresh()
     void useSite.getState().refresh()
+    refreshClub()
+    document.addEventListener('visibilitychange', refreshWhenVisible)
+    return () => document.removeEventListener('visibilitychange', refreshWhenVisible)
   }, [])
   return (
     <Routes>

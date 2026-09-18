@@ -15,6 +15,8 @@ import {
   pollProblems,
   removeOption,
   tally,
+  typedYearProblem,
+  waitingOnOpenPoll,
 } from './poll'
 import type { AdminPoll, AdminSuggestion, PollOption } from './types'
 
@@ -45,8 +47,12 @@ describe('building options', () => {
     expect(optionFromSuggestion(suggestion)).toMatchObject({ key: paris.key, suggestionId: 9 })
   })
 
-  it('ignores a year that is not four digits', () => {
-    expect(optionFromTyped('Paris', '84').year).toBeNull()
+  it.each([
+    ['two digits', '84'],
+    ['too early', '1492'],
+    ['too late', '2400'],
+  ])('ignores a year that is %s', (_name, year) => {
+    expect(optionFromTyped('Paris', year).year).toBeNull()
   })
 
   it('refuses duplicates, blanks and a seventh option', () => {
@@ -172,5 +178,28 @@ describe('pollActions', () => {
     ['closed', true, ['delete']],
   ] as const)('%s with another open: %s', (status, anotherOpen, expected) => {
     expect(pollActions(status, anotherOpen)).toEqual(expected)
+  })
+})
+
+describe('typedYearProblem', () => {
+  it.each([
+    ['blank', '', null],
+    ['padded', ' 1984 ', null],
+    ['two digits', '84', 'Use a four-digit year, or leave it blank.'],
+    ['words', 'soon', 'Use a four-digit year, or leave it blank.'],
+    ['out of range', '1492', 'Use a four-digit year, or leave it blank.'],
+  ] as const)('%s', (_name, year, expected) => {
+    expect(typedYearProblem(year)).toBe(expected)
+  })
+})
+
+describe('waitingOnOpenPoll', () => {
+  it.each([
+    ['a draft behind an open poll', 'draft', true, true],
+    ['a closed poll behind an open poll', 'closed', true, true],
+    ['the open poll itself', 'open', true, false],
+    ['a draft with nothing open', 'draft', false, false],
+  ] as const)('%s', (_name, status, anotherOpen, expected) => {
+    expect(waitingOnOpenPoll(status, anotherOpen)).toBe(expected)
   })
 })

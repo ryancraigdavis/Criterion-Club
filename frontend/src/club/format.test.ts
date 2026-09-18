@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest'
 import {
-  boardDate,
   dayMonth,
   daysUntil,
   fromLocalInput,
@@ -49,10 +48,6 @@ describe('formatting a screening', () => {
     ['uses the date further out', '2026-09-14T15:00:00Z', 'Friday, September 18 · 7:30 PM'],
   ])('%s', (_name, at, expected) => {
     expect(screeningWhen(FRIDAY_730PM, now(at), CHICAGO)).toBe(expected)
-  })
-
-  it('prints a short board date', () => {
-    expect(boardDate(FRIDAY_730PM, CHICAGO)).toBe('FRI SEP 18')
   })
 
   it('prints a day and month', () => {

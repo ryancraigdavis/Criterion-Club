@@ -1,8 +1,11 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { adminOrder, isUpcoming } from '../draft'
+import { useFailure } from '../failure'
 import { screeningDate, screeningTime } from '../format'
+import { useNow } from '../now'
 import { rsvpSummary } from '../rsvp'
 import { fetchAdminScreenings, useScreenings } from '../screenings'
+import { saveShowSchedule, useSettings } from '../settings'
 import type { AdminScreening } from '../types'
 import { GuestList } from './GuestList'
 import { ScreeningEditor } from './ScreeningEditor'
@@ -74,24 +77,41 @@ function Notes({ failure, empty }: { failure: string | null; empty: boolean }) {
       {failure === null ? null : <p className="club-form__problem">{failure}</p>}
       {empty ? (
         <p className="panel__detail">
-          Nothing scheduled yet. Add the first screening to put it on the front door.
+          Nothing scheduled yet. Add the first screening to put it on the club page.
         </p>
       ) : null}
     </>
   )
 }
 
+function ScheduleSwitch() {
+  const show = useSettings((state) => state.showSchedule)
+  const [busy, setBusy] = useState(false)
+  const [failure, run] = useFailure()
+  const toggle = () => {
+    setBusy(true)
+    void run(() => saveShowSchedule(!show), 'change the setting').finally(() => setBusy(false))
+  }
+  return (
+    <div className="switch-row">
+      <label className="switch">
+        <input type="checkbox" checked={show} disabled={busy} onChange={toggle} />
+        <span>List the screenings after the next one on the club page</span>
+      </label>
+      {failure === null ? null : <p className="club-form__problem">{failure}</p>}
+    </div>
+  )
+}
+
 export function ScreeningsPanel() {
   const [screenings, setScreenings] = useState<AdminScreening[] | null>(null)
   const [editing, setEditing] = useState<Editing>(null)
-  const [failure, setFailure] = useState<string | null>(null)
-  const now = useMemo(() => new Date(), [])
+  const [failure, run] = useFailure()
+  const now = useNow()
 
   const load = useCallback(() => {
-    fetchAdminScreenings().then(setScreenings, (error: unknown) =>
-      setFailure(error instanceof Error ? error.message : String(error)),
-    )
-  }, [])
+    void run(() => fetchAdminScreenings().then(setScreenings), 'load the screenings')
+  }, [run])
 
   useEffect(load, [load])
 
@@ -115,6 +135,7 @@ export function ScreeningsPanel() {
           </button>
         ) : null}
       </header>
+      <ScheduleSwitch />
       <EditorSlot editing={editing} onDone={done} />
       <Notes failure={failure} empty={empty} />
       <ul className="slates">

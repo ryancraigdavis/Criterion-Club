@@ -1,6 +1,7 @@
 import { type FormEvent, type ReactNode, useEffect, useState } from 'react'
-import { Choice, Field, failureText } from '../Field'
+import { Choice, Field } from '../Field'
 import { FilmSearch } from '../FilmPicker'
+import { failureText } from '../failure'
 import { fetchSuggestions } from '../members'
 import {
   addOption,
@@ -16,6 +17,7 @@ import {
   pollPayload,
   pollProblems,
   removeOption,
+  typedYearProblem,
 } from '../poll'
 import { savePoll } from '../polls'
 import type { AdminPoll, AdminSuggestion } from '../types'
@@ -73,6 +75,7 @@ function Typed({ draft, add }: AddProps) {
   const [title, setTitle] = useState('')
   const [year, setYear] = useState('')
   const option = optionFromTyped(title, year)
+  const yearProblem = typedYearProblem(year) ?? undefined
   const commit = () => {
     add(option)
     setTitle('')
@@ -90,7 +93,7 @@ function Typed({ draft, add }: AddProps) {
           />
         )}
       </Field>
-      <Field label="Year">
+      <Field label="Year" problem={yearProblem}>
         {(id) => (
           <input
             id={id}
@@ -104,7 +107,7 @@ function Typed({ draft, add }: AddProps) {
       <button
         type="button"
         className="button button--ghost"
-        disabled={!canAdd(draft, option)}
+        disabled={yearProblem !== undefined || !canAdd(draft, option)}
         onClick={commit}
       >
         Add option
@@ -210,7 +213,7 @@ export function PollEditor({ poll, onDone }: Props) {
         />
         <Problem text={failure} />
         <p className="club-form__hint">
-          Polls save as drafts. Open one from the list to pin it to the board.
+          Polls save as drafts. Open one from the list to put it on the club page.
         </p>
         <div className="editor__actions">
           <button type="submit" className="button" disabled={busy}>

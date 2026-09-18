@@ -1,6 +1,6 @@
 import './club.css'
 import { useId, useState } from 'react'
-import { failureText } from './Field'
+import { failureText } from './failure'
 import { tally } from './poll'
 import { usePoll } from './polls'
 import type { Poll, PollOption } from './types'

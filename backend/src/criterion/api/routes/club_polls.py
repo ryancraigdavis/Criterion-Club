@@ -16,12 +16,10 @@ from criterion.api.deps import (
 )
 from criterion.club import films, polls
 from criterion.club.sessions import Session
-from criterion.db import poll_repo, repo
+from criterion.db import poll_repo
 from criterion.emby.auth import EmbyUnavailable
 
 router = APIRouter(tags=["club-polls"])
-
-BOARD_SCHEDULE = "club_board_schedule"
 
 
 class VoteIn(BaseModel):
@@ -44,10 +42,6 @@ class PollIn(BaseModel):
 
 class PollStatusIn(BaseModel):
     status: Literal["open", "closed"]
-
-
-class SettingsIn(BaseModel):
-    board_schedule: bool
 
 
 def _my_vote(
@@ -184,19 +178,6 @@ async def vote(request: Request, body: VoteIn) -> dict:
         },
     )
     return {"my_vote": body.option_id}
-
-
-@router.get("/club/settings")
-async def club_settings(request: Request) -> dict:
-    return {"board_schedule": repo.get_meta(conn_of(request), BOARD_SCHEDULE) != "off"}
-
-
-@router.post("/club/admin/settings")
-async def save_settings(request: Request, body: SettingsIn) -> dict:
-    require_same_site(request)
-    require_admin(request)
-    repo.set_meta(conn_of(request), BOARD_SCHEDULE, "on" if body.board_schedule else "off")
-    return {"board_schedule": body.board_schedule}
 
 
 @router.get("/club/admin/polls")

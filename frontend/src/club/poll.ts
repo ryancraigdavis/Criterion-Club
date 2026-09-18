@@ -2,6 +2,7 @@ import type { Film } from './films'
 import type { AdminPoll, AdminSuggestion, PollOption, PollStatus } from './types'
 
 export const POLL_LIMITS = { question: 200, minOptions: 2, maxOptions: 6 } as const
+export const YEAR_RANGE = { min: 1880, max: 2100 } as const
 
 export interface OptionDraft {
   key: string
@@ -48,8 +49,20 @@ function typedKey(title: string, year: number | null): string {
   return `typed:${title.trim().toLocaleLowerCase()}|${year ?? ''}`
 }
 
+function typedYear(year: string): number | null {
+  const text = year.trim()
+  const value = Number(text)
+  const valid = /^\d{4}$/.test(text) && value >= YEAR_RANGE.min && value <= YEAR_RANGE.max
+  return valid ? value : null
+}
+
+export function typedYearProblem(year: string): string | null {
+  const blank = year.trim() === ''
+  return blank || typedYear(year) !== null ? null : 'Use a four-digit year, or leave it blank.'
+}
+
 export function optionFromTyped(title: string, year: string): OptionDraft {
-  const parsed = /^\d{4}$/.test(year.trim()) ? Number(year) : null
+  const parsed = typedYear(year)
   return {
     key: typedKey(title, parsed),
     itemId: null,
@@ -149,6 +162,10 @@ const ACTIONS: Record<PollStatus, PollAction[]> = {
   draft: ['edit', 'open', 'delete'],
   open: ['close', 'delete'],
   closed: ['reopen', 'delete'],
+}
+
+export function waitingOnOpenPoll(status: PollStatus, anotherOpen: boolean): boolean {
+  return anotherOpen && status !== 'open'
 }
 
 export function pollActions(status: PollStatus, anotherOpen: boolean): PollAction[] {

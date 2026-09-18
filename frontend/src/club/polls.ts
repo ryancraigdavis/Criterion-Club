@@ -13,11 +13,8 @@ import { browserVoterId } from './voter'
 
 interface PollState {
   poll: Poll | null
-  boardSchedule: boolean
-  known: boolean
   refresh: () => Promise<void>
   vote: (optionId: number) => Promise<void>
-  setBoardSchedule: (show: boolean) => void
 }
 
 async function loadPoll(): Promise<Poll | null> {
@@ -26,20 +23,13 @@ async function loadPoll(): Promise<Poll | null> {
   return body.poll === null ? null : toPoll(body.poll)
 }
 
-async function loadBoardSchedule(): Promise<boolean> {
-  return (await sendJson<{ board_schedule: boolean }>('/api/club/settings')).board_schedule
-}
-
 export const usePoll = create<PollState>((set, get) => ({
   poll: null,
-  boardSchedule: true,
-  known: false,
   refresh: async () => {
-    const [poll, boardSchedule] = await Promise.all([
-      loadPoll().catch(() => null),
-      loadBoardSchedule().catch(() => true),
-    ])
-    set({ poll, boardSchedule, known: true })
+    await loadPoll().then(
+      (poll) => set({ poll }),
+      () => undefined,
+    )
   },
   vote: async (optionId) => {
     const poll = get().poll
@@ -50,12 +40,7 @@ export const usePoll = create<PollState>((set, get) => ({
     })
     await get().refresh()
   },
-  setBoardSchedule: (boardSchedule) => set({ boardSchedule }),
 }))
-
-export function openPollOf(poll: Poll | null): Poll | null {
-  return poll?.status === 'open' ? poll : null
-}
 
 export async function fetchAdminPolls(): Promise<AdminPoll[]> {
   const body = await sendJson<{ polls: RawAdminPoll[] }>('/api/club/admin/polls')
@@ -73,9 +58,4 @@ export async function movePoll(id: number, status: 'open' | 'closed'): Promise<v
 
 export async function deletePoll(id: number): Promise<void> {
   await postJson(`/api/club/admin/polls/${id}/delete`)
-}
-
-export async function saveBoardSchedule(show: boolean): Promise<void> {
-  await postJson('/api/club/admin/settings', { board_schedule: show })
-  usePoll.getState().setBoardSchedule(show)
 }

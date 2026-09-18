@@ -56,7 +56,3 @@ export function Choice<T extends string>({
     </fieldset>
   )
 }
-
-export function failureText(error: unknown, action: string): string {
-  return error instanceof Error ? `Couldn’t ${action}: ${error.message}` : `Couldn’t ${action}.`
-}

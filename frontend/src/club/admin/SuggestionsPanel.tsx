@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Choice, failureText } from '../Field'
+import { Choice } from '../Field'
+import { useFailure } from '../failure'
 import { dayMonth } from '../format'
 import { fetchSuggestions, markSuggestion, removeSuggestion } from '../members'
 import {
@@ -9,6 +10,7 @@ import {
   type SuggestionFilter,
 } from '../suggestion'
 import type { AdminSuggestion, SuggestionStatus } from '../types'
+import { SignedInMark } from './SignedInMark'
 
 const FILTERS: { value: SuggestionFilter; label: string }[] = [
   { value: 'all', label: 'All' },
@@ -16,12 +18,14 @@ const FILTERS: { value: SuggestionFilter; label: string }[] = [
 ]
 
 function PitchRow({ suggestion, onChange }: { suggestion: AdminSuggestion; onChange: () => void }) {
-  const mark = (status: SuggestionStatus) => markSuggestion(suggestion.id, status).then(onChange)
+  const [failure, run] = useFailure()
+  const change = (work: () => Promise<unknown>) =>
+    void run(work, 'update the suggestion').then((ok) => (ok ? onChange() : undefined))
+  const mark = (status: SuggestionStatus) => change(() => markSuggestion(suggestion.id, status))
   const remove = () =>
     window.confirm(`Remove the suggestion for ${suggestion.title}?`)
-      ? removeSuggestion(suggestion.id).then(onChange)
+      ? change(() => removeSuggestion(suggestion.id))
       : undefined
-  const by = `From ${suggestion.name}${suggestion.signedIn ? ' ✓' : ''} · ${dayMonth(suggestion.createdAt)}`
   return (
     <li className="pitch">
       {suggestion.thumbUrl === null ? (
@@ -35,8 +39,12 @@ function PitchRow({ suggestion, onChange }: { suggestion: AdminSuggestion; onCha
           {suggestion.year === null ? null : <span> {suggestion.year}</span>}
           {suggestion.itemId === null ? null : <span className="pitch__owned">In the library</span>}
         </p>
-        <p className="pitch__by">{by}</p>
+        <p className="pitch__by">
+          From {suggestion.name}
+          <SignedInMark signedIn={suggestion.signedIn} /> · {dayMonth(suggestion.createdAt)}
+        </p>
         {suggestion.note === null ? null : <p className="pitch__note">{suggestion.note}</p>}
+        {failure === null ? null : <p className="field__problem">{failure}</p>}
       </div>
       <div className="pitch__actions">
         <Choice
@@ -56,13 +64,11 @@ function PitchRow({ suggestion, onChange }: { suggestion: AdminSuggestion; onCha
 export function SuggestionsPanel() {
   const [suggestions, setSuggestions] = useState<AdminSuggestion[] | null>(null)
   const [filter, setFilter] = useState<SuggestionFilter>('all')
-  const [failure, setFailure] = useState<string | null>(null)
+  const [failure, run] = useFailure()
 
   const load = useCallback(() => {
-    fetchSuggestions().then(setSuggestions, (error: unknown) =>
-      setFailure(failureText(error, 'load suggestions')),
-    )
-  }, [])
+    void run(() => fetchSuggestions().then(setSuggestions), 'load the suggestions')
+  }, [run])
 
   useEffect(load, [load])
 

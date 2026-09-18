@@ -74,7 +74,7 @@ def test_bad_options(ready, options):
     assert ready.post("/api/club/admin/polls", json=body).status_code == 422
 
 
-def test_drafts_stay_off_the_board(ready):
+def test_drafts_are_not_public(ready):
     _poll(ready)
     _as(ready, None)
     assert ready.get("/api/club/poll").json() == {"poll": None}
@@ -196,17 +196,3 @@ def test_only_admins_manage_polls(ready, credentials):
     body = {"question": "Q", "options": [{"title": "A"}, {"title": "B"}]}
     assert ready.get("/api/club/admin/polls").status_code in {401, 403}
     assert ready.post("/api/club/admin/polls", json=body).status_code in {401, 403}
-    assert ready.post("/api/club/admin/settings", json={"board_schedule": False}).status_code in {
-        401,
-        403,
-    }
-
-
-def test_board_schedule_setting(ready):
-    assert ready.get("/api/club/settings").json() == {"board_schedule": True}
-    _as(ready, ADMIN)
-    assert ready.post("/api/club/admin/settings", json={"board_schedule": False}).json() == {
-        "board_schedule": False
-    }
-    _as(ready, None)
-    assert ready.get("/api/club/settings").json() == {"board_schedule": False}

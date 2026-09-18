@@ -6,7 +6,15 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from criterion.api.errors import register_exception_handlers
-from criterion.api.routes import club, club_admin, club_members, club_polls, films, site
+from criterion.api.routes import (
+    club,
+    club_admin,
+    club_members,
+    club_polls,
+    club_settings,
+    films,
+    site,
+)
 from criterion.api.routes.static import mount_static
 from criterion.club.throttle import Throttle
 from criterion.config import Settings, get_settings
@@ -63,4 +71,5 @@ def create_app(settings: Settings | None = None, client: EmbyClient | None = Non
     app.include_router(club_admin.router, prefix="/api")
     app.include_router(club_members.router, prefix="/api")
     app.include_router(club_polls.router, prefix="/api")
+    app.include_router(club_settings.router, prefix="/api")
     return app

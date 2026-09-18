@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
-import { failureText } from '../Field'
+import { useFailure } from '../failure'
 import { fetchGuestList, removeRsvp } from '../members'
 import { ANSWERS, headcount, rsvpSummary } from '../rsvp'
 import type { AdminRsvp, RsvpTotals } from '../types'
+import { SignedInMark } from './SignedInMark'
 
 const ANSWER_LABELS = Object.fromEntries(ANSWERS.map((answer) => [answer.value, answer.label]))
 
@@ -16,12 +17,7 @@ function GuestRow({ rsvp, onRemove }: { rsvp: AdminRsvp; onRemove: (rsvp: AdminR
     <tr>
       <td>
         {rsvp.name}
-        {rsvp.signedIn ? (
-          <span className="guests__signed" title="Signed in with Emby">
-            {' '}
-            ✓
-          </span>
-        ) : null}
+        <SignedInMark signedIn={rsvp.signedIn} />
       </td>
       <td>
         <span className={`badge badge--answer-${rsvp.answer}`}>{ANSWER_LABELS[rsvp.answer]}</span>
@@ -69,25 +65,19 @@ function GuestTable({ loaded, onRemove }: { loaded: Loaded; onRemove: (rsvp: Adm
 
 export function GuestList({ eventId, onChanged }: { eventId: number; onChanged: () => void }) {
   const [loaded, setLoaded] = useState<Loaded | null>(null)
-  const [failure, setFailure] = useState<string | null>(null)
+  const [failure, run] = useFailure()
 
   const load = useCallback(() => {
-    fetchGuestList(eventId).then(setLoaded, (error: unknown) =>
-      setFailure(failureText(error, 'load the guest list')),
-    )
-  }, [eventId])
+    void run(() => fetchGuestList(eventId).then(setLoaded), 'load the guest list')
+  }, [eventId, run])
 
   useEffect(load, [load])
 
-  const remove = (rsvp: AdminRsvp) => {
-    const sure = window.confirm(`Remove ${rsvp.name}’s RSVP?`)
-    return sure
-      ? removeRsvp(rsvp.id).then(() => {
-          load()
-          onChanged()
-        })
+  const removed = (ok: boolean) => (ok ? [load(), onChanged()] : undefined)
+  const remove = (rsvp: AdminRsvp) =>
+    window.confirm(`Remove ${rsvp.name}’s RSVP?`)
+      ? void run(() => removeRsvp(rsvp.id), 'remove the RSVP').then(removed)
       : undefined
-  }
 
   return (
     <div className="guests">

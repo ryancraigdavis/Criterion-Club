@@ -1,7 +1,8 @@
 import './club.css'
 import { type FormEvent, useState } from 'react'
-import { Field, failureText } from './Field'
+import { Field } from './Field'
 import { FilmFields } from './FilmPicker'
+import { failureText } from './failure'
 import { sendSuggestion } from './members'
 import { useClubSession } from './session'
 import {
@@ -28,7 +29,7 @@ function Thanks({
 }) {
   return (
     <div className="answered" role="status">
-      <p className="answered__title">It’s in the box</p>
+      <p className="answered__title">Suggestion sent</p>
       <p className="answered__detail">Thanks for suggesting {title}. The hosts read every one.</p>
       <div className="account__actions">
         <button type="button" className="button button--ghost" onClick={onAnother}>
@@ -125,7 +126,7 @@ export function SuggestionForm({ onDone }: Props) {
         </p>
       )}
       <button type="submit" className="button club-form__submit" disabled={busy}>
-        {busy ? 'Sending…' : 'Drop it in the box'}
+        {busy ? 'Sending…' : 'Send suggestion'}
       </button>
     </form>
   )
