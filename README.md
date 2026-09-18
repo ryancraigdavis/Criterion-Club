@@ -61,6 +61,15 @@ their device to reduce motion). A background job builds it 30 seconds after the 
 again daily; it only downloads posters when the collection has actually changed, and the page itself
 never waits on Emby. **What we've watched** lists the screenings that have finished.
 
+**Sharing and calendars.** A link to the site pasted into a chat previews the next screening — its
+title, date and poster — or the club card when nothing is scheduled. nginx fills those tags in from
+`/api/club/og` on every page load (server-side includes), so they are right without JavaScript; if
+the API is down the page still loads without them. Posters get a JPEG copy for this, since chat
+apps are unevenly happy with WebP. The next screening has an "Add to calendar" menu: an `.ics` file
+for Apple Calendar and Outlook, or a Google Calendar link. A screening that came from the library can
+be refreshed from the dashboard to pick up a corrected title or a new poster; the hosts' message and
+description are left alone.
+
 **Polls** are optional. One runs at a time; results appear once it's closed and stay for two weeks.
 Signed-out votes are tied to a random id kept in the browser, which is an honour system.
 
@@ -104,6 +113,8 @@ worker: the throttles live in memory and there is one shared SQLite connection.
 | GET | `/api/club/films?q=` | — | live Emby search, 8 results, two-character minimum |
 | GET | `/api/club/next` | — | the next published screening, or `null` |
 | GET | `/api/club/schedule` | — | the screenings after that one |
+| GET | `/api/club/screenings/{id}/calendar.ics` | — | a published screening as a calendar event |
+| GET | `/api/club/og` | — | link-preview `<meta>` tags for the next screening (nginx includes them in the page) |
 | GET | `/api/club/past?limit=` | — | published screenings that have finished, newest first (24 by default, 60 at most) |
 | GET | `/api/club/settings` | — | `{show_schedule}` |
 | GET | `/api/club/poll` | — | the open poll, or a recently closed one with results |
@@ -113,6 +124,7 @@ worker: the throttles live in memory and there is one shared SQLite connection.
 | GET | `/api/club/admin/overview` | admin | who you are |
 | GET/POST | `/api/club/admin/events[/{id}][/delete]` | admin | schedule, edit, cancel |
 | GET | `/api/club/admin/events/{id}/rsvps` | admin | the guest list with notes |
+| POST | `/api/club/admin/events/{id}/refresh` | admin | re-read a library film from Emby: title, year, runtime, poster (`changed` lists what moved) |
 | POST | `/api/club/admin/rsvps/{id}/delete` | admin | remove an RSVP |
 | GET/POST | `/api/club/admin/suggestions[/{id}][/delete]` | admin | the inbox and its statuses |
 | GET/POST | `/api/club/admin/polls[/{id}][/delete]` | admin | build, open and close polls |
@@ -131,6 +143,7 @@ worker: the throttles live in memory and there is one shared SQLite connection.
 | `EMBY_PUBLIC_URL` | `EMBY_SERVER_URL` | what the "Emby" links point at |
 | `DATA_DIR` | `./data` | holds `club.db` and `club-art/` |
 | `FRONTEND_ORIGIN` | `http://localhost:5273` | CORS and the same-site check |
+| `CLUB_TIMEZONE` | `America/Los_Angeles` | how link previews write the date; a typo fails startup |
 | `MOSAIC_COLLECTION` | `The Criterion Collection` | the Emby collection behind the club page's poster mosaic; empty turns it off |
 | `LOG_LEVEL` / `LOG_JSON` | `INFO` / `false` | level is case-insensitive; a typo fails startup |
 

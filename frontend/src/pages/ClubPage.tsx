@@ -1,5 +1,6 @@
 import '../club/club.css'
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
+import { AddToCalendar } from '../club/AddToCalendar'
 import { screeningDate, screeningTime } from '../club/format'
 import { type ClubLead, clubLead } from '../club/load'
 import { Mosaic } from '../club/Mosaic'
@@ -139,6 +140,7 @@ function Actions({ next, onOpen }: { next: Screening | null; onOpen: (panel: Pan
       >
         Suggest a film
       </button>
+      {next === null ? null : <AddToCalendar screening={next} />}
     </div>
   )
 }

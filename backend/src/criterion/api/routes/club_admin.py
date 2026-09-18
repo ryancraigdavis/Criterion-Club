@@ -174,3 +174,37 @@ async def delete_suggestion(request: Request, suggestion_id: int) -> dict:
     if not club_repo.delete_suggestion(conn_of(request), suggestion_id):
         raise HTTPException(404, "no such suggestion")
     return {"deleted": suggestion_id}
+
+
+REFRESHED = ("title", "year", "runtime_min", "art_version")
+
+
+def _refreshed(before: sqlite3.Row, film: dict) -> dict:
+    kept = {name: before[name] for name in club_repo.EVENT_FIELDS}
+    fresh = {name: film[name] for name in ("title", "year", "runtime_min")}
+    return {**kept, **fresh, "art_version": film["art_version"] or before["art_version"]}
+
+
+async def _library_film(request: Request, item_id: str | None) -> dict:
+    if not item_id:
+        raise HTTPException(422, "only films from the library can be refreshed")
+    try:
+        film = await films.resolve(
+            emby_of(request), settings_of(request).data_dir, item_id, "", None
+        )
+    except films.FilmProblem as error:
+        raise HTTPException(422, str(error)) from error
+    except EmbyUnavailable as error:
+        raise HTTPException(502, "the emby server did not answer") from error
+    return film
+
+
+@router.post("/club/admin/events/{event_id}/refresh")
+async def refresh_screening(request: Request, event_id: int) -> dict:
+    require_same_site(request)
+    require_admin(request)
+    before = _existing(request, event_id)
+    fields = _refreshed(before, await _library_film(request, before["item_id"]))
+    club_repo.update_event(conn_of(request), event_id, fields)
+    changed = [name for name in REFRESHED if fields[name] != before[name]]
+    return {**_screening(request, event_id), "changed": changed}

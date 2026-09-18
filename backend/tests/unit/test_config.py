@@ -25,3 +25,12 @@ def test_an_unknown_log_level_is_refused():
 
 def test_a_bare_host_gets_a_scheme():
     assert Settings(**REQUIRED).emby_base == "http://emby.test:8096"
+
+
+def test_the_club_keeps_pacific_time_by_default():
+    assert Settings(**REQUIRED).zone.key == "America/Los_Angeles"
+
+
+def test_an_unknown_timezone_is_refused():
+    with pytest.raises(ValidationError):
+        Settings(**REQUIRED, club_timezone="Mars/Olympus_Mons")

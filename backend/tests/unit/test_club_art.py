@@ -103,4 +103,22 @@ async def test_a_poster_missing_its_thumb_is_fetched_again(tmp_path):
 
 async def test_writes_leave_no_partial_files(tmp_path):
     await art.cache_emby(_Emby(_png()), "m1", "tag-m1", tmp_path)
-    assert sorted(path.suffix for path in art.art_dir(tmp_path).iterdir()) == [".webp", ".webp"]
+    suffixes = sorted(path.suffix for path in art.art_dir(tmp_path).iterdir())
+    assert suffixes == [".jpg", ".webp", ".webp"]
+
+
+async def test_writes_a_jpeg_for_link_previews(tmp_path):
+    version = await art.cache_emby(_Emby(_png()), "m1", "tag-m1", tmp_path)
+    with Image.open(art.preview_path(tmp_path, version)) as preview:
+        assert (preview.format, preview.width) == ("JPEG", art.ART_WIDTH)
+
+
+async def test_older_art_gets_its_preview_on_first_use(tmp_path):
+    version = await art.cache_emby(_Emby(_png()), "m1", "tag-m1", tmp_path)
+    art.preview_path(tmp_path, version).unlink()
+    assert art.ensure_preview(tmp_path, version)
+    assert art.preview_path(tmp_path, version).exists()
+
+
+def test_no_poster_means_no_preview(tmp_path):
+    assert not art.ensure_preview(tmp_path, "nothing")

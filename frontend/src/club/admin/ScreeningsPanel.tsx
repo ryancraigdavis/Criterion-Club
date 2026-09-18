@@ -3,6 +3,7 @@ import { adminOrder, isUpcoming } from '../draft'
 import { useFailure } from '../failure'
 import { screeningDate, screeningTime } from '../format'
 import { useNow } from '../now'
+import { refreshNote, refreshScreening } from '../refresh'
 import { rsvpSummary } from '../rsvp'
 import { fetchAdminScreenings, useScreenings } from '../screenings'
 import { saveShowSchedule, useSettings } from '../settings'
@@ -21,8 +22,36 @@ interface RowProps {
   onChanged: () => void
 }
 
+interface RefreshProps {
+  screening: AdminScreening
+  onNote: (note: string | null) => void
+  onChanged: () => void
+}
+
+function RefreshButton({ screening, onNote, onChanged }: RefreshProps) {
+  const [busy, setBusy] = useState(false)
+  const [failure, run] = useFailure()
+  const refresh = () => {
+    setBusy(true)
+    onNote(null)
+    void run(
+      () => refreshScreening(screening.id).then((result) => onNote(refreshNote(result.changed))),
+      'refresh from Emby',
+    )
+      .then((ok) => (ok ? onChanged() : undefined))
+      .finally(() => setBusy(false))
+  }
+  useEffect(() => (failure === null ? undefined : onNote(failure)), [failure, onNote])
+  return screening.itemId === null ? null : (
+    <button type="button" className="chip" disabled={busy} onClick={refresh}>
+      {busy ? 'Refreshing…' : 'Refresh'}
+    </button>
+  )
+}
+
 function ScreeningRow({ screening, now, onEdit, onChanged }: RowProps) {
   const [guests, setGuests] = useState(false)
+  const [note, setNote] = useState<string | null>(null)
   const past = !isUpcoming(screening.startsAt, now)
   return (
     <li className="slate-item">
@@ -38,6 +67,9 @@ function ScreeningRow({ screening, now, onEdit, onChanged }: RowProps) {
           {screening.artUrl && screening.posterUrl === null ? (
             <span className="slate__warning">Couldn’t load the poster from that address</span>
           ) : null}
+          <span className="slate__note" role="status">
+            {note ?? ''}
+          </span>
         </div>
         <span className={`badge badge--${screening.status}`}>
           {STATUS_LABELS[screening.status]}
@@ -51,6 +83,7 @@ function ScreeningRow({ screening, now, onEdit, onChanged }: RowProps) {
           >
             Guest list
           </button>
+          <RefreshButton screening={screening} onNote={setNote} onChanged={onChanged} />
           <button type="button" className="chip" onClick={onEdit}>
             Edit
           </button>

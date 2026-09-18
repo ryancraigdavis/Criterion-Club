@@ -1,5 +1,8 @@
+import asyncio
+import sqlite3
 import time
 from datetime import UTC, datetime
+from pathlib import Path
 
 import structlog
 from fastapi import APIRouter, HTTPException, Query, Request, Response
@@ -13,7 +16,7 @@ from criterion.api.deps import (
     settings_of,
     throttle_of,
 )
-from criterion.club import events, sessions
+from criterion.club import art, calendar, events, preview, sessions
 from criterion.club.throttle import TooManyAttempts
 from criterion.db import club_repo
 from criterion.emby.auth import EmbyUnavailable, InvalidLogin
@@ -112,3 +115,46 @@ async def schedule(request: Request, limit: int = Query(default=4, ge=1, le=12))
 async def past(request: Request, limit: int = Query(default=24, ge=1, le=60)) -> dict:
     rows = club_repo.past_events(conn_of(request), events.cutoff(datetime.now(UTC)), limit)
     return {"screenings": [events.past(row) for row in rows]}
+
+
+def _site_url(request: Request) -> str:
+    return settings_of(request).frontend_origin.rstrip("/")
+
+
+def _published(request: Request, event_id: int) -> sqlite3.Row:
+    row = club_repo.get_event(conn_of(request), event_id)
+    if row is None or row["status"] != "published":
+        raise HTTPException(404, "no such screening")
+    return row
+
+
+@router.get("/club/screenings/{event_id}/calendar.ics")
+async def screening_calendar(request: Request, event_id: int) -> Response:
+    row = _published(request, event_id)
+    return Response(
+        calendar.event(row, _site_url(request), datetime.now(UTC)),
+        media_type="text/calendar; charset=utf-8",
+        headers={
+            "Content-Disposition": f'attachment; filename="criterion-club-{event_id}.ics"',
+            "Cache-Control": "no-cache",
+        },
+    )
+
+
+async def _preview_image(data_dir: Path, version: str | None) -> dict:
+    ready = await asyncio.to_thread(art.ensure_preview, data_dir, version) if version else False
+    return {"path": art.preview_url(version)} if ready else preview.CARD
+
+
+@router.get("/club/og")
+async def link_preview(request: Request) -> Response:
+    settings = settings_of(request)
+    rows = club_repo.upcoming_events(conn_of(request), events.cutoff(datetime.now(UTC)), 1)
+    row = next(iter(rows), None)
+    image = await _preview_image(settings.data_dir, row["art_version"] if row else None)
+    shown = preview.for_screening(row, settings.zone, image) if row else preview.DEFAULT
+    return Response(
+        preview.meta_tags(shown, _site_url(request)),
+        media_type="text/html; charset=utf-8",
+        headers={"Cache-Control": "no-cache"},
+    )

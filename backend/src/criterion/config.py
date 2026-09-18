@@ -1,8 +1,9 @@
 from functools import lru_cache
 from pathlib import Path
 from typing import Annotated, Literal
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from pydantic import BeforeValidator
+from pydantic import AfterValidator, BeforeValidator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 LogLevel = Annotated[
@@ -15,6 +16,17 @@ def _with_scheme(url: str) -> str:
     bare = url.strip().rstrip("/")
     prefix = "" if bare.startswith(("http://", "https://")) else "http://"
     return prefix + bare
+
+
+def _known_zone(name: str) -> str:
+    try:
+        ZoneInfo(name)
+    except (ZoneInfoNotFoundError, ValueError) as error:
+        raise ValueError(f"unknown timezone {name!r}") from error
+    return name
+
+
+TimeZoneName = Annotated[str, AfterValidator(_known_zone)]
 
 
 class Settings(BaseSettings):
@@ -32,6 +44,7 @@ class Settings(BaseSettings):
     club_admins: str = ""
     secure_cookies: bool = False
     mosaic_collection: str = "The Criterion Collection"
+    club_timezone: TimeZoneName = "America/Los_Angeles"
 
     @property
     def emby_base(self) -> str:
@@ -40,6 +53,10 @@ class Settings(BaseSettings):
     @property
     def emby_public(self) -> str:
         return _with_scheme(self.emby_public_url or self.emby_server_url)
+
+    @property
+    def zone(self) -> ZoneInfo:
+        return ZoneInfo(self.club_timezone)
 
     @property
     def club_admin_names(self) -> frozenset[str]:
