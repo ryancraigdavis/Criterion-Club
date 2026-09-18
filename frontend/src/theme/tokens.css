@@ -1,0 +1,28 @@
+:root {
+  --rust: #802614;
+  --rust-bright: #c7380f;
+  --sunset: #e98313;
+  --gold: #fccc0c;
+  --ink: #010404;
+  --ember: #41150d;
+  --cream: #f4e6c8;
+
+  --ground: #140806;
+  --surface: #1f0c08;
+  --surface-raised: #2b110b;
+  --line: rgb(244 230 200 / 0.14);
+  --line-strong: rgb(199 56 15 / 0.7);
+  --text: var(--cream);
+  --text-muted: rgb(244 230 200 / 0.66);
+  --focus-ring: 0 0 0 3px rgb(252 204 12 / 0.5);
+
+  --font-display: "Oswald Variable", "Arial Narrow", "Roboto Condensed", Impact, sans-serif;
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+
+  --radius-sm: 3px;
+  --radius: 6px;
+  --gutter: clamp(16px, 3vw, 40px);
+  --content-width: 1440px;
+
+  color-scheme: dark;
+}
