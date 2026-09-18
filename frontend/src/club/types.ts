@@ -66,6 +66,8 @@ export interface RawScreening {
   description: string | null
   item_id: string | null
   poster_url: string | null
+  thumb_url?: string | null
+  trailer_url?: string | null
   runtime_min: number | null
 }
 
@@ -115,6 +117,8 @@ export interface Screening {
   description: string | null
   itemId: string | null
   posterUrl: string | null
+  thumbUrl: string | null
+  trailerUrl: string | null
   runtimeMin: number | null
 }
 
@@ -136,6 +140,8 @@ export function toScreening(raw: RawScreening): Screening {
     description: raw.description,
     itemId: raw.item_id,
     posterUrl: raw.poster_url === null ? null : `${API_BASE}${raw.poster_url}`,
+    thumbUrl: raw.thumb_url ? `${API_BASE}${raw.thumb_url}` : null,
+    trailerUrl: raw.trailer_url ?? null,
     runtimeMin: raw.runtime_min,
   }
 }

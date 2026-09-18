@@ -193,5 +193,7 @@ export function draftPreview(draft: Draft): Screening | null {
         location: orNull(draft.location),
         message: orNull(draft.message),
         description: orNull(draft.description),
+        thumbUrl: null,
+        trailerUrl: null,
       }
 }

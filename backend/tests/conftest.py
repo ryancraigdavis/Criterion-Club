@@ -61,6 +61,12 @@ class FakeEmby:
         hits = [raw for raw in self.films if term.casefold() in str(raw["Name"]).casefold()]
         return [film_of(raw) for raw in hits[:limit]]
 
+    async def exact(self, title: str) -> list[Film]:
+        self._answer()
+        self.search_calls.append(f"exact:{title}")
+        wanted = title.strip().casefold()
+        return [film_of(raw) for raw in self.films if str(raw["Name"]).casefold() == wanted]
+
     async def lookup(self, item_id: str) -> Film | None:
         self._answer()
         return next((film_of(raw) for raw in self.films if raw["Id"] == item_id), None)

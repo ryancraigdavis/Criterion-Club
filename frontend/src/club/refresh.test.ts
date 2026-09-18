@@ -11,6 +11,7 @@ describe('refreshNote', () => {
       ['title', 'runtime_min', 'art_version'],
       'Updated the title, running time and poster.',
     ],
+    ['a new trailer', ['trailer_url'], 'Updated the trailer.'],
   ] as const)('%s', (_name, changed, expected) => {
     expect(refreshNote([...changed])).toBe(expected)
   })

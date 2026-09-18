@@ -102,6 +102,7 @@ def test_secure_cookies_in_production(settings, fake_emby):
 def test_film_search_returns_library_matches(api, fake_emby):
     films = api.get("/api/club/films", params={"q": "blood"}).json()["films"]
     assert [film["title"] for film in films] == ["There Will Be Blood"]
+    thumb = films[0].pop("thumb_url")
     assert films[0] == {
         "item_id": "m1",
         "title": "There Will Be Blood",
@@ -109,6 +110,7 @@ def test_film_search_returns_library_matches(api, fake_emby):
         "overview": "An oilman builds an empire.",
         "runtime_min": 158,
     }
+    assert thumb.startswith("/api/club/films/m1/thumb?tag=tag-m1&sig=")
 
 
 @pytest.mark.parametrize(

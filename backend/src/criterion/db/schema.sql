@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS club_events (
     runtime_min INTEGER,
     art_url TEXT,
     art_version TEXT,
+    trailer_url TEXT,
     message TEXT,
     description TEXT,
     starts_at TEXT NOT NULL,

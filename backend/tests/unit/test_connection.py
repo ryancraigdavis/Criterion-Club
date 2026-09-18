@@ -51,3 +51,27 @@ def test_runs_only_the_missing_steps(old_db, start, expected):
     migrate(old_db, STEPS, start)
     assert _columns(old_db) == expected
     assert _version(old_db) == len(STEPS)
+
+
+def test_a_database_from_before_trailers_gains_the_column(tmp_path):
+    old = sqlite3.connect(tmp_path / "club.db")
+    old.executescript(
+        "CREATE TABLE club_events (id INTEGER PRIMARY KEY, title TEXT NOT NULL,"
+        " starts_at TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'draft',"
+        " created_at TEXT NOT NULL, updated_at TEXT NOT NULL);"
+        "INSERT INTO club_events VALUES (1, 'Kept', '2026-01-01', 'published', 'x', 'x');"
+    )
+    old.commit()
+    old.close()
+    conn = connect(tmp_path)
+    columns = {row[1] for row in conn.execute("PRAGMA table_info(club_events)")}
+    assert "trailer_url" in columns
+    assert conn.execute("SELECT title FROM club_events").fetchone()[0] == "Kept"
+    assert _version(conn) == len(MIGRATIONS)
+    conn.close()
+
+
+def test_a_fresh_database_already_has_trailers(tmp_path):
+    conn = connect(tmp_path)
+    assert "trailer_url" in {row[1] for row in conn.execute("PRAGMA table_info(club_events)")}
+    conn.close()

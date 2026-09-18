@@ -13,3 +13,4 @@ class Film(BaseModel, frozen=True):
     overview: str | None = None
     runtime_min: int | None = None
     image_tag: str | None = None
+    trailer_url: str | None = None

@@ -56,6 +56,23 @@ export function ChosenFilm({
   )
 }
 
+function FilmThumb({ url }: { url: string | null }) {
+  const [broken, setBroken] = useState(false)
+  return url === null || broken ? (
+    <span className="film-search__thumb film-search__thumb--blank" />
+  ) : (
+    <img
+      className="film-search__thumb"
+      src={url}
+      alt=""
+      width={32}
+      height={48}
+      loading="lazy"
+      onError={() => setBroken(true)}
+    />
+  )
+}
+
 export function FilmSearch({ onPick }: { onPick: (film: Film) => void }) {
   const [query, setQuery] = useState('')
   const { films, failed } = useSearch(query)
@@ -71,6 +88,9 @@ export function FilmSearch({ onPick }: { onPick: (film: Film) => void }) {
         spellCheck={false}
         onChange={(event) => setQuery(event.target.value)}
       />
+      <span className="field__hint">
+        Put a title in "quotes" to find exactly that film, like "M".
+      </span>
       {failed ? (
         <span className="field__problem">
           The library isn’t answering. Add the film as “Not in the library” instead.
@@ -81,6 +101,7 @@ export function FilmSearch({ onPick }: { onPick: (film: Film) => void }) {
           {films.map((film) => (
             <li key={film.itemId}>
               <button type="button" className="film-search__row" onClick={() => onPick(film)}>
+                <FilmThumb url={film.thumbUrl} />
                 <span className="film-search__title">{film.title}</span>
                 <span className="film-search__year">{film.year ?? ''}</span>
               </button>

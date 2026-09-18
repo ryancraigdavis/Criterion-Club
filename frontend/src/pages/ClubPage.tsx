@@ -1,6 +1,7 @@
 import '../club/club.css'
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import { AddToCalendar } from '../club/AddToCalendar'
+import { FilmPreview } from '../club/FilmPreview'
 import { screeningDate, screeningTime } from '../club/format'
 import { type ClubLead, clubLead } from '../club/load'
 import { Mosaic } from '../club/Mosaic'
@@ -11,18 +12,51 @@ import { ScreeningCard } from '../club/ScreeningCard'
 import { SuggestionForm } from '../club/SuggestionForm'
 import { laterScreenings, useScreenings } from '../club/screenings'
 import { useSettings } from '../club/settings'
+import { youtubeId } from '../club/trailer'
 import type { Screening } from '../club/types'
 import { Watched } from '../club/Watched'
 import { SiteHeader } from '../ui/SiteHeader'
 
 type Panel = { kind: 'rsvp'; screening: Screening } | { kind: 'suggest' } | null
 
+interface Preview {
+  screening: Screening
+  kicker: string
+  playing: boolean
+}
+
+function Poster({ screening, onOpen }: { screening: Screening; onOpen: () => void }) {
+  return (
+    <button
+      type="button"
+      className="coming-up__poster"
+      onClick={onOpen}
+      aria-label={`More about ${screening.title}`}
+    >
+      {screening.thumbUrl === null ? (
+        <span className="coming-up__blank" />
+      ) : (
+        <img
+          className="coming-up__thumb"
+          src={screening.thumbUrl}
+          alt=""
+          width={40}
+          height={60}
+          loading="lazy"
+        />
+      )}
+    </button>
+  )
+}
+
 function ComingUp({
   screenings,
   onRsvp,
+  onPreview,
 }: {
   screenings: Screening[]
   onRsvp: (s: Screening) => void
+  onPreview: (s: Screening) => void
 }) {
   return screenings.length === 0 ? null : (
     <section className="coming-up" aria-labelledby="coming-up-title">
@@ -32,13 +66,14 @@ function ComingUp({
       <ol className="coming-up__list">
         {screenings.map((screening) => (
           <li key={screening.id} className="coming-up__row">
+            <Poster screening={screening} onOpen={() => onPreview(screening)} />
             <span className="coming-up__date">{screeningDate(screening.startsAt)}</span>
-            <span className="coming-up__film">
+            <button type="button" className="coming-up__film" onClick={() => onPreview(screening)}>
               {screening.title}
               {screening.year === null ? null : (
                 <span className="screening__year"> {screening.year}</span>
               )}
-            </span>
+            </button>
             <span className="coming-up__time">{screeningTime(screening.startsAt)}</span>
             <button type="button" className="chip" onClick={() => onRsvp(screening)}>
               RSVP
@@ -121,7 +156,15 @@ function ClubPanel({ panel, onClose }: { panel: Exclude<Panel, null>; onClose: (
   )
 }
 
-function Actions({ next, onOpen }: { next: Screening | null; onOpen: (panel: Panel) => void }) {
+function Actions({
+  next,
+  onOpen,
+  onTrailer,
+}: {
+  next: Screening | null
+  onOpen: (panel: Panel) => void
+  onTrailer: (screening: Screening) => void
+}) {
   return (
     <div className="club-actions">
       {next === null ? null : (
@@ -131,6 +174,11 @@ function Actions({ next, onOpen }: { next: Screening | null; onOpen: (panel: Pan
           onClick={() => onOpen({ kind: 'rsvp', screening: next })}
         >
           RSVP
+        </button>
+      )}
+      {next === null || youtubeId(next.trailerUrl) === null ? null : (
+        <button type="button" className="button button--ghost" onClick={() => onTrailer(next)}>
+          Watch trailer
         </button>
       )}
       <button
@@ -155,8 +203,13 @@ export function ClubPage() {
   const status = useScreenings((state) => state.status)
   const past = useScreenings((state) => state.past)
   const [panel, setPanel] = useState<Panel>(null)
+  const [preview, setPreview] = useState<Preview | null>(null)
   const later = useMemo(() => laterScreenings(schedule, next), [schedule, next])
   const showLater = useSettings((state) => state.showSchedule)
+  const rsvpFromPreview = (screening: Screening) => {
+    setPreview(null)
+    setPanel({ kind: 'rsvp', screening })
+  }
   return (
     <>
       <Mosaic />
@@ -164,7 +217,15 @@ export function ClubPage() {
       <main className="club-page">
         <h1 className="visually-hidden">Criterion Club</h1>
         <Lead lead={clubLead(status, next !== null)} next={next} />
-        {status === 'ready' ? <Actions next={next} onOpen={setPanel} /> : null}
+        {status === 'ready' ? (
+          <Actions
+            next={next}
+            onOpen={setPanel}
+            onTrailer={(screening) =>
+              setPreview({ screening, kicker: 'Next screening', playing: true })
+            }
+          />
+        ) : null}
         {panel === null ? null : (
           <ClubPanel key={panelKey(panel)} panel={panel} onClose={() => setPanel(null)} />
         )}
@@ -172,9 +233,20 @@ export function ClubPage() {
         <ComingUp
           screenings={showLater ? later : []}
           onRsvp={(screening) => setPanel({ kind: 'rsvp', screening })}
+          onPreview={(screening) => setPreview({ screening, kicker: 'Coming up', playing: false })}
         />
         <Watched screenings={past} />
       </main>
+      {preview === null ? null : (
+        <FilmPreview
+          key={preview.screening.id}
+          screening={preview.screening}
+          kicker={preview.kicker}
+          playing={preview.playing}
+          onClose={() => setPreview(null)}
+          onRsvp={rsvpFromPreview}
+        />
+      )}
     </>
   )
 }

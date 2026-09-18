@@ -7,6 +7,7 @@ const FILMS: Record<string, Film> = {
     year: 2007,
     overview: 'An oilman builds an empire.',
     runtimeMin: 158,
+    thumbUrl: null,
   },
   alien: {
     itemId: 'alien',
@@ -14,6 +15,7 @@ const FILMS: Record<string, Film> = {
     year: 1979,
     overview: 'A crew answers a distress call.',
     runtimeMin: 117,
+    thumbUrl: null,
   },
 }
 

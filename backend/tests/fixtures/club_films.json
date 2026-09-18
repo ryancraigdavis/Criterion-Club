@@ -5,7 +5,14 @@
     "ProductionYear": 2007,
     "Overview": "An oilman builds an empire.",
     "RunTimeTicks": 94800000000,
-    "ImageTags": { "Primary": "tag-m1" }
+    "ImageTags": {
+      "Primary": "tag-m1"
+    },
+    "RemoteTrailers": [
+      {
+        "Url": "https://www.youtube.com/watch?v=FeSLPELpMeM"
+      }
+    ]
   },
   {
     "Id": "m2",
@@ -13,7 +20,9 @@
     "ProductionYear": 1994,
     "Overview": "A day behind the counter.",
     "RunTimeTicks": 55200000000,
-    "ImageTags": { "Primary": "tag-m2" }
+    "ImageTags": {
+      "Primary": "tag-m2"
+    }
   },
   {
     "Id": "m3",
@@ -22,5 +31,23 @@
     "Overview": "Nothing to look at.",
     "RunTimeTicks": 36000000000,
     "ImageTags": {}
+  },
+  {
+    "Id": "m4",
+    "Name": "M",
+    "ProductionYear": 1931,
+    "Overview": "A city hunts a murderer.",
+    "RunTimeTicks": 70800000000,
+    "ImageTags": {
+      "Primary": "tag-m4"
+    },
+    "RemoteTrailers": [
+      {
+        "Url": "https://vimeo.com/1"
+      },
+      {
+        "Url": "https://youtu.be/abcdefghijk"
+      }
+    ]
   }
 ]

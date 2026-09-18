@@ -6,6 +6,7 @@ const FIELD_NAMES: Record<string, string> = {
   year: 'year',
   runtime_min: 'running time',
   art_version: 'poster',
+  trailer_url: 'trailer',
 }
 
 function listed(names: string[]): string {

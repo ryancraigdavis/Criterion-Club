@@ -4,7 +4,7 @@ from pathlib import Path
 SCHEMA_PATH = Path(__file__).with_name("schema.sql")
 # schema.sql is always the current shape. Append single statements here to bring databases created
 # before a change up to it; a fresh database skips them and starts at len(MIGRATIONS).
-MIGRATIONS: tuple[str, ...] = ()
+MIGRATIONS: tuple[str, ...] = ("ALTER TABLE club_events ADD COLUMN trailer_url TEXT",)
 
 
 def _version(conn: sqlite3.Connection) -> int:

@@ -35,6 +35,8 @@ const screening = (overrides: Partial<AdminScreening> = {}): AdminScreening => (
   description: 'It rains.',
   itemId: null,
   posterUrl: null,
+  thumbUrl: null,
+  trailerUrl: null,
   runtimeMin: null,
   status: 'published',
   artUrl: 'https://img.example/m.jpg',

@@ -8,6 +8,7 @@ EVENT_FIELDS = (
     "runtime_min",
     "art_url",
     "art_version",
+    "trailer_url",
     "message",
     "description",
     "starts_at",

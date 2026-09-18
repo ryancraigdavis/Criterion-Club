@@ -12,6 +12,8 @@ const SAMURAI: Screening = {
   description: null,
   itemId: '42',
   posterUrl: null,
+  thumbUrl: null,
+  trailerUrl: null,
   runtimeMin: 207,
 }
 

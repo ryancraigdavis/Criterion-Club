@@ -66,6 +66,7 @@ async def _fields(request: Request, body: ScreeningIn, before: sqlite3.Row | Non
         "runtime_min": film["runtime_min"],
         "art_url": typed_art,
         "art_version": film["art_version"] or await _typed_version(data_dir, typed_art, before),
+        "trailer_url": film["trailer_url"],
         "description": _text(body.description) or film["overview"],
         "message": _text(body.message),
         "starts_at": events.canonical(body.starts_at),
@@ -176,13 +177,14 @@ async def delete_suggestion(request: Request, suggestion_id: int) -> dict:
     return {"deleted": suggestion_id}
 
 
-REFRESHED = ("title", "year", "runtime_min", "art_version")
+REFRESHED = ("title", "year", "runtime_min", "art_version", "trailer_url")
 
 
 def _refreshed(before: sqlite3.Row, film: dict) -> dict:
     kept = {name: before[name] for name in club_repo.EVENT_FIELDS}
     fresh = {name: film[name] for name in ("title", "year", "runtime_min")}
-    return {**kept, **fresh, "art_version": film["art_version"] or before["art_version"]}
+    kept_if_gone = {name: film[name] or before[name] for name in ("art_version", "trailer_url")}
+    return {**kept, **fresh, **kept_if_gone}
 
 
 async def _library_film(request: Request, item_id: str | None) -> dict:

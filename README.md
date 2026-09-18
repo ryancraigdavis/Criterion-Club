@@ -44,8 +44,10 @@ usernames listed in `CLUB_ADMINS`; that is checked on every request, never trust
 Sign-in stays switched off until `SESSION_SECRET` is set, and changing that secret signs everyone
 out. Eight wrong passwords in ten minutes earns a rest.
 
-**Films** come from Emby live: the picker searches the library as you type, and saving a screening
-snapshots its title, year, synopsis and runtime. Nothing here reads the video store's catalog. A
+**Films** come from Emby live: the picker searches the library as you type, showing each film's
+poster, and saving a screening snapshots its title, year, synopsis, runtime and trailer link. Put a
+title in double quotes (`"M"`) to match exactly that title, which is the only way to find very short
+ones. Nothing here reads the video store's catalog. A
 film that isn't in the library can be typed in by hand with a link to its poster.
 
 **Poster art** is downloaded once and kept in `club-art/`, named by a hash of its source, so a
@@ -143,7 +145,8 @@ Sign-in only works over https (`SECURE_COOKIES=true`), so use the domain, not
 | POST | `/api/club/login` | — | `{username, password}` → sets the cookie |
 | POST | `/api/club/logout` | — | clears the cookie |
 | GET | `/api/club/me` | — | `{name, admin}` |
-| GET | `/api/club/films?q=` | — | live Emby search, 8 results, two-character minimum |
+| GET | `/api/club/films?q=` | — | live Emby search, 8 results, two-character minimum; `"title"` in quotes matches exactly (one character is enough) |
+| GET | `/api/club/films/{id}/thumb?tag=&sig=` | — | a search result's poster, fetched once and cached; only the signed URLs from search are served |
 | GET | `/api/club/next` | — | the next published screening, or `null` |
 | GET | `/api/club/schedule` | — | the screenings after that one |
 | GET | `/api/club/screenings/{id}/calendar.ics` | — | a published screening as a calendar event |

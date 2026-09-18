@@ -33,6 +33,7 @@ async def test_a_library_film_snapshots_its_details(tmp_path):
         "overview": "Oil.",
         "runtime_min": 158,
         "art_version": None,
+        "trailer_url": None,
     }
 
 

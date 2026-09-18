@@ -202,3 +202,67 @@ async def test_a_missing_collection_has_no_posters():
     emby = Collections([{"Id": "b-other", "Name": "Something Else"}], MEMBERS)
     assert await emby.client().collection_posters("The Criterion Collection") == []
     assert all("ParentId" not in request.url.params for request in emby.requests)
+
+
+async def test_exact_asks_by_sort_title_and_keeps_only_the_title():
+    emby = Emby(
+        items=[
+            {"Id": "m1", "Name": "The Heat"},
+            {"Id": "m2", "Name": "Heat"},
+            {"Id": "m3", "Name": "Heat Wave"},
+        ]
+    )
+    found = await emby.client().exact("the heat")
+    params = emby.requests[-1].url.params
+    assert (params["NameStartsWith"], params["SortBy"]) == ("heat", "SortName")
+    assert [film.item_id for film in found] == ["m1"]
+
+
+@pytest.mark.parametrize(
+    ("title", "prefix"),
+    [
+        pytest.param("The Godfather", "Godfather", id="the"),
+        pytest.param("A Man Escaped", "Man Escaped", id="a"),
+        pytest.param("An Autumn Afternoon", "Autumn Afternoon", id="an"),
+        pytest.param("M", "M", id="single-letter"),
+        pytest.param("Theater", "Theater", id="not-an-article"),
+    ],
+)
+def test_sort_prefix_drops_a_leading_article(title, prefix):
+    from criterion.emby.client import sort_prefix
+
+    assert sort_prefix(title) == prefix
+
+
+@pytest.mark.parametrize(
+    ("trailers", "expected"),
+    [
+        pytest.param([], None, id="none"),
+        pytest.param([{"Url": "https://vimeo.com/1"}], None, id="not-youtube"),
+        pytest.param(
+            [{"Url": "https://vimeo.com/1"}, {"Url": "https://youtu.be/abcdefghijk"}],
+            "https://www.youtube.com/watch?v=abcdefghijk",
+            id="first-youtube",
+        ),
+        pytest.param(
+            [{"Url": "http://www.youtube.com/watch?v=abcdefghijk&t=3"}],
+            "https://www.youtube.com/watch?v=abcdefghijk",
+            id="normalised",
+        ),
+        pytest.param(
+            [{"Url": "https://evil.example/?u=youtube.com/watch?v=abcdefghijk"}],
+            None,
+            id="lookalike",
+        ),
+    ],
+)
+def test_trailers_are_youtube_only(trailers, expected):
+    from criterion.emby.client import film_of
+
+    assert film_of({"Id": "m1", "Name": "X", "RemoteTrailers": trailers}).trailer_url == expected
+
+
+async def test_search_asks_for_trailers():
+    emby = Emby()
+    await emby.client().search("blood")
+    assert "RemoteTrailers" in emby.requests[-1].url.params["Fields"]

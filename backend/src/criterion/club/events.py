@@ -29,6 +29,8 @@ def public(row: sqlite3.Row) -> dict:
         "description": row["description"],
         "item_id": row["item_id"],
         "poster_url": poster_url(row),
+        "thumb_url": art.art_url(row["art_version"], art.THUMB),
+        "trailer_url": row["trailer_url"],
         "runtime_min": row["runtime_min"],
     }
 

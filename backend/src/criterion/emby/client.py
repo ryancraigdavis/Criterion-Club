@@ -1,3 +1,4 @@
+import re
 import time
 from itertools import chain
 
@@ -8,9 +9,15 @@ from criterion.emby import auth
 from criterion.emby.auth import EmbyUnavailable
 from criterion.emby.models import EmbyUser, Film
 
-FIELDS = "Overview,ProductionYear,RunTimeTicks,ImageTags"
+FIELDS = "Overview,ProductionYear,RunTimeTicks,ImageTags,RemoteTrailers"
 TICKS_PER_MINUTE = 600_000_000
 SEARCH_LIMIT = 20
+EXACT_LIMIT = 50
+ARTICLES = ("the ", "a ", "an ")
+YOUTUBE = re.compile(
+    r"^https?://(?:www\.|m\.)?(?:youtube\.com/(?:watch\?(?:[^#]*&)?v=|embed/)|youtu\.be/)"
+    r"([A-Za-z0-9_-]{11})(?![A-Za-z0-9_-])"
+)
 TIMEOUT = 8.0
 FAILURE_MEMORY = 60.0
 
@@ -29,6 +36,23 @@ def _runtime_minutes(ticks: int | None) -> int | None:
     return None if ticks is None else round(ticks / TICKS_PER_MINUTE)
 
 
+def youtube_url(url: str) -> str | None:
+    match = YOUTUBE.match(url.strip())
+    return f"https://www.youtube.com/watch?v={match.group(1)}" if match else None
+
+
+def _trailer(raw: dict) -> str | None:
+    urls = (str(trailer.get("Url") or "") for trailer in raw.get("RemoteTrailers") or [])
+    return next((found for found in map(youtube_url, urls) if found), None)
+
+
+def sort_prefix(title: str) -> str:
+    # Emby's NameStartsWith matches the sort title, which drops a leading article.
+    lowered = title.strip().casefold()
+    article = next((word for word in ARTICLES if lowered.startswith(word)), "")
+    return title.strip()[len(article) :].strip()
+
+
 def film_of(raw: dict) -> Film:
     return Film(
         item_id=str(raw.get("Id") or ""),
@@ -37,6 +61,7 @@ def film_of(raw: dict) -> Film:
         overview=raw.get("Overview"),
         runtime_min=_runtime_minutes(raw.get("RunTimeTicks")),
         image_tag=(raw.get("ImageTags") or {}).get("Primary"),
+        trailer_url=_trailer(raw),
     )
 
 
@@ -119,6 +144,18 @@ class EmbyClient:
             {"SearchTerm": term, "SortBy": "SortName", "SortOrder": "Ascending", "Limit": limit}
         )
         return [film_of(raw) for raw in items]
+
+    async def exact(self, title: str, limit: int = EXACT_LIMIT) -> list[Film]:
+        wanted = title.strip().casefold()
+        items = await self._items(
+            {
+                "NameStartsWith": sort_prefix(title),
+                "SortBy": "SortName",
+                "SortOrder": "Ascending",
+                "Limit": limit,
+            }
+        )
+        return [film_of(raw) for raw in items if _name(raw) == wanted]
 
     async def lookup(self, item_id: str) -> Film | None:
         items = await self._items({"Ids": item_id, "Limit": 1})

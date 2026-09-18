@@ -1,4 +1,5 @@
 import { sendJson } from '../api'
+import { API_BASE } from '../config'
 
 export interface Film {
   itemId: string
@@ -6,6 +7,7 @@ export interface Film {
   year: number | null
   overview: string | null
   runtimeMin: number | null
+  thumbUrl: string | null
 }
 
 interface RawFilm {
@@ -14,6 +16,7 @@ interface RawFilm {
   year: number | null
   overview: string | null
   runtime_min: number | null
+  thumb_url?: string | null
 }
 
 export const MIN_QUERY = 2
@@ -26,8 +29,25 @@ export function normalizeTerm(term: string): string {
   return term.normalize('NFD').replace(DIACRITICS, '').toLowerCase()
 }
 
+// Only double quotes ask for an exact title: an apostrophe starts real titles ('Round Midnight).
+const QUOTES = '"“”«»'
+
+export interface SearchQuery {
+  term: string
+  exact: boolean
+}
+
+const trimQuotes = (text: string) =>
+  text.replace(new RegExp(`^[${QUOTES}]+|[${QUOTES}]+$`, 'g'), '').trim()
+
+export function parseQuery(query: string): SearchQuery {
+  const text = query.trim()
+  return { term: trimQuotes(text), exact: QUOTES.includes(text.charAt(0)) && text !== '' }
+}
+
 export function searchable(query: string): boolean {
-  return query.trim().length >= MIN_QUERY
+  const { term, exact } = parseQuery(query)
+  return term.length >= (exact ? 1 : MIN_QUERY)
 }
 
 const MATCH_TIERS: ((title: string, term: string) => boolean)[] = [
@@ -42,7 +62,7 @@ export function matchTier(title: string, term: string): number {
 }
 
 export function bestMatches(films: readonly Film[], query: string): Film[] {
-  const term = normalizeTerm(query.trim())
+  const term = normalizeTerm(parseQuery(query).term)
   return [...films]
     .sort((a, b) => matchTier(a.title, term) - matchTier(b.title, term))
     .slice(0, RESULTS)
@@ -55,6 +75,7 @@ export function toFilm(raw: RawFilm): Film {
     year: raw.year,
     overview: raw.overview,
     runtimeMin: raw.runtime_min,
+    thumbUrl: raw.thumb_url ? `${API_BASE}${raw.thumb_url}` : null,
   }
 }
 

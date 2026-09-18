@@ -20,6 +20,7 @@ async def _library(client, data_dir: Path, item_id: str, *_: object) -> dict:
         "overview": film.overview,
         "runtime_min": film.runtime_min,
         "art_version": version or None,
+        "trailer_url": film.trailer_url,
     }
 
 
@@ -33,6 +34,7 @@ async def _typed(_: object, __: Path, ___: str | None, title: str, year: int | N
         "overview": None,
         "runtime_min": None,
         "art_version": None,
+        "trailer_url": None,
     }
 
 

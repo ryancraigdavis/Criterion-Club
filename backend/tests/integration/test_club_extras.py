@@ -153,3 +153,25 @@ def test_only_admins_refresh(admin, credentials):
     admin.post("/api/club/login", json=credentials) if credentials else None
     status = admin.post(f"/api/club/admin/events/{screening['id']}/refresh").status_code
     assert status in {401, 403}
+
+
+def test_a_library_screening_keeps_its_trailer_and_thumb(admin):
+    screening = _create(admin, item_id="m1")
+    public = admin.get("/api/club/next").json()["screening"]
+    assert public["trailer_url"] == "https://www.youtube.com/watch?v=FeSLPELpMeM"
+    assert public["thumb_url"].endswith("-t.webp")
+    assert screening["trailer_url"] == public["trailer_url"]
+
+
+def test_a_typed_screening_has_no_trailer(admin):
+    _create(admin, title="Home movie")
+    assert admin.get("/api/club/next").json()["screening"]["trailer_url"] is None
+
+
+def test_refresh_adds_a_trailer_emby_learned_about(admin, fake_emby):
+    fake_emby.films[1]["RemoteTrailers"] = []
+    screening = _create(admin, item_id="m2")
+    fake_emby.films[1]["RemoteTrailers"] = [{"Url": "https://youtu.be/abcdefghijk"}]
+    body = admin.post(f"/api/club/admin/events/{screening['id']}/refresh").json()
+    assert body["changed"] == ["trailer_url"]
+    assert body["screening"]["trailer_url"] == "https://www.youtube.com/watch?v=abcdefghijk"

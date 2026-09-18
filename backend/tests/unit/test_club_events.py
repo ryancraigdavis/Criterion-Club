@@ -19,6 +19,7 @@ def _row(**overrides) -> dict:
         "runtime_min": None,
         "status": "published",
         "art_url": None,
+        "trailer_url": None,
         "updated_at": "2026-09-16T00:00:00+00:00",
         **overrides,
     }
