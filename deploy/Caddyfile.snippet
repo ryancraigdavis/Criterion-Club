@@ -1,0 +1,13 @@
+# Add to the Caddyfile that already serves emby.therewillbecinema.com, then reload Caddy.
+# Caddy gets the certificate itself once DNS points here. It replaces any X-Forwarded-For a client
+# sends with the real address, which the club's nginx then trusts (it only trusts private ranges).
+criterion.therewillbecinema.com {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+	reverse_proxy 192.168.10.108:8766
+}

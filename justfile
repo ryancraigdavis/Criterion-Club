@@ -1,5 +1,7 @@
 # Criterion Club — dev tasks. Run `just <recipe>`.
 
+registry := "ghcr.io/ryancraigdavis"
+
 api:
     cd backend && doppler run -- uv run uvicorn --factory criterion.main:create_app --reload --port 8100
 
@@ -34,3 +36,18 @@ up:
 
 down:
     docker compose down
+
+# Build both images for the NAS (amd64) and push them to GHCR, tagged with the commit and `latest`.
+# Refuses a dirty tree so every tag names a real commit. Needs `docker login ghcr.io` once.
+release:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    tag="$(git describe --always --dirty)"
+    [[ "$tag" != *-dirty ]] || { echo "commit first: release tags must name a commit" >&2; exit 1; }
+    for part in api:backend web:frontend; do
+        image="{{registry}}/criterion-club-${part%%:*}"
+        docker build --platform linux/amd64 -t "$image:$tag" -t "$image:latest" "${part#*:}"
+        docker push "$image:$tag"
+        docker push "$image:latest"
+    done
+    echo "released $tag — restart the app in TrueNAS to pull it"

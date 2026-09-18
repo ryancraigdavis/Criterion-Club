@@ -6,6 +6,8 @@ COPY . .
 RUN npm run build
 
 FROM nginxinc/nginx-unprivileged:1.29-alpine AS runtime
+LABEL org.opencontainers.image.source="https://github.com/ryancraigdavis/Criterion-Club"
+LABEL org.opencontainers.image.description="Criterion Club web (nginx + built frontend)"
 COPY --chown=101:101 nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build --chown=101:101 /src/dist /usr/share/nginx/html
 EXPOSE 8080

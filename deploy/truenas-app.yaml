@@ -1,0 +1,27 @@
+# Criterion Club on TrueNAS SCALE (24.10+): Apps → Discover → ⋮ → Install via YAML.
+# Before pasting:
+#   1. Create the dataset below, owned by the `apps` user and group (568:568).
+#   2. Replace DOPPLER_TOKEN with the service token for criterion-club / prd.
+# To update: `just release` on the dev machine, then Stop/Start this app (it pulls :latest).
+# To roll back: swap :latest for a released commit tag (e.g. :c935485) and save.
+services:
+  api:
+    image: ghcr.io/ryancraigdavis/criterion-club-api:latest
+    pull_policy: always
+    environment:
+      DOPPLER_TOKEN: "dp.st.prd.REPLACE_ME"
+      DATA_DIR: /data
+    volumes:
+      - /mnt/main_storage/apps/criterion-club:/data
+    restart: unless-stopped
+
+  # Must stay named `api`: the web container's nginx proxies /api/ to http://api:8000.
+  web:
+    image: ghcr.io/ryancraigdavis/criterion-club-web:latest
+    pull_policy: always
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "8766:8080"
+    restart: unless-stopped

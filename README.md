@@ -101,6 +101,39 @@ nginx trusts `X-Forwarded-For` only from private addresses and passes the API a 
 address, which is what the sign-in, post and search throttles key on. The API must run as a single
 worker: the throttles live in memory and there is one shared SQLite connection.
 
+## Deploying to the NAS
+
+The club runs on TrueNAS SCALE (24.10+) as a custom app, behind the Caddy that already serves Emby.
+Images are built here and pulled from GHCR; the NAS never needs the source.
+
+**Once**
+
+1. Doppler: `criterion-club` → `prd` holds the production values (`SECURE_COOKIES=true`,
+   `FRONTEND_ORIGIN=https://criterion.therewillbecinema.com`, `EMBY_PUBLIC_URL`, its own
+   `SESSION_SECRET`, `CLUB_ADMINS`). Make a service token for it:
+   `doppler configs tokens create truenas --project criterion-club --config prd --plain`.
+2. `docker login ghcr.io` (a GitHub token with `write:packages`), commit, then `just release`.
+   On first push, set both packages (`criterion-club-api`, `criterion-club-web`) to **Public** under
+   GitHub → Packages → Package settings, so the NAS can pull without credentials.
+3. TrueNAS: create the dataset `main_storage/apps/criterion-club` and set its owner to user and
+   group `apps` (568). Apps → Discover → ⋮ → **Install via YAML**, name it `criterion-club`, paste
+   `deploy/truenas-app.yaml` with the service token in place of `dp.st.prd.REPLACE_ME`.
+4. Check `http://192.168.10.108:8766/api/health` says `"emby_ok": true`. The poster mosaic appears
+   about 30 seconds after start.
+5. Add `deploy/Caddyfile.snippet` to the Caddyfile and reload Caddy.
+6. DNS: at Cloudflare, replace the `criterion` record with a **DNS-only** CNAME to
+   `emby.therewillbecinema.com` (so it follows the home IP); in OPNsense Unbound, add a host override
+   `criterion.therewillbecinema.com` → 192.168.10.108, as Emby has.
+7. Snapshot the dataset daily (Data Protection → Periodic Snapshot Tasks); SQLite in WAL mode is
+   safe to snapshot.
+
+**Every release:** commit, `just release`, then Stop and Start the app in TrueNAS (it pulls
+`:latest`). **Roll back** by editing the app's YAML to a released commit tag, e.g.
+`criterion-club-api:c935485`.
+
+Sign-in only works over https (`SECURE_COOKIES=true`), so use the domain, not
+`http://192.168.10.108:8766`, once it is live.
+
 ## API
 
 | Method | Path | Auth | Notes |

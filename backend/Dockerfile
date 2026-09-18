@@ -1,4 +1,6 @@
 FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
+LABEL org.opencontainers.image.source="https://github.com/ryancraigdavis/Criterion-Club"
+LABEL org.opencontainers.image.description="Criterion Club API"
 
 ENV UV_PROJECT_ENVIRONMENT=/app/.venv \
     PATH="/app/.venv/bin:$PATH" \
