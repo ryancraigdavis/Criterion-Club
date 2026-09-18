@@ -6,6 +6,7 @@ import '../club/club.css'
 import { SignInForm } from '../club/SignInForm'
 import { useClubSession } from '../club/session'
 import { useSite } from '../club/site'
+import { ClubMark } from './ClubMark'
 import { ExternalMark } from './icons'
 
 function useEscape(onEscape: () => void) {
@@ -74,7 +75,7 @@ export function SiteHeader() {
       <header className="site-header">
         <div className="site-header__inner">
           <Link to="/" className="brand">
-            <img src="/logo-128.webp" alt="" width={40} height={40} />
+            <ClubMark />
             <span className="brand__name">Criterion Club</span>
           </Link>
           <nav className="site-nav" aria-label="Main">

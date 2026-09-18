@@ -11,12 +11,12 @@
   gap: 7px;
   height: 32px;
   padding: 0 12px;
-  font: 500 13px / 1 var(--font-display);
-  letter-spacing: 0.08em;
+  font: 500 11px / 1 var(--font-display);
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   white-space: nowrap;
-  color: var(--cream);
-  background: rgb(1 4 4 / 0.35);
+  color: var(--text);
+  background: var(--surface);
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
   cursor: pointer;
@@ -27,14 +27,14 @@
 }
 
 .chip:hover {
-  color: var(--gold);
-  border-color: var(--sunset);
+  color: var(--text);
+  border-color: var(--text-muted);
 }
 
 .chip[aria-pressed="true"] {
-  color: var(--ink);
-  background: var(--gold);
-  border-color: var(--gold);
+  color: var(--on-accent);
+  background: var(--accent);
+  border-color: var(--accent);
 }
 
 .segmented .options {
@@ -69,10 +69,8 @@
 
 .sheet__title {
   margin: 0;
-  font: 600 24px / 1 var(--font-display);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--gold);
+  font: 400 26px / 1.15 var(--font-serif);
+  color: var(--text);
 }
 
 .club-form {
@@ -86,8 +84,8 @@
 }
 
 .field__label {
-  font: 500 11px / 1 var(--font-display);
-  letter-spacing: 0.14em;
+  font: 600 10.5px / 1 var(--font-display);
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text-muted);
 }
@@ -97,29 +95,26 @@
   min-height: 46px;
   padding: 10px 14px;
   font: 400 16px / 1.3 var(--font-body);
-  color: var(--cream);
-  background: var(--ink);
-  border: 2px solid var(--rust);
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--field-border);
   border-radius: var(--radius);
-  box-shadow: inset 0 2px 6px rgb(0 0 0 / 0.5);
-  caret-color: var(--gold);
+  caret-color: var(--text);
 }
 
 .field__input:focus {
   outline: none;
-  border-color: var(--gold);
-  box-shadow:
-    inset 0 2px 6px rgb(0 0 0 / 0.5),
-    var(--focus-ring);
+  border-color: var(--text);
+  box-shadow: var(--focus-ring);
 }
 
 .club-form__problem {
   margin: 0;
   padding: 10px 12px;
   font-size: 14px;
-  color: var(--cream);
-  background: rgb(199 56 15 / 0.18);
-  border-left: 3px solid var(--rust-bright);
+  color: var(--text);
+  background: var(--danger-soft);
+  border-left: 2px solid var(--danger);
   border-radius: var(--radius-sm);
 }
 
@@ -151,16 +146,15 @@
 }
 
 .account__name {
-  font: 600 20px / 1.2 var(--font-display);
-  letter-spacing: 0.03em;
-  color: var(--cream);
+  font: 500 21px / 1.2 var(--font-serif);
+  color: var(--text);
 }
 
 .account__role {
-  font: 500 11px / 1 var(--font-display);
-  letter-spacing: 0.14em;
+  font: 600 10.5px / 1 var(--font-display);
+  letter-spacing: var(--label-spacing);
   text-transform: uppercase;
-  color: var(--sunset);
+  color: var(--label);
 }
 
 .account__actions {
@@ -184,16 +178,13 @@
   padding: 24px;
   background: var(--surface);
   border: 1px solid var(--line);
-  border-top: 4px solid var(--gold);
   border-radius: var(--radius);
 }
 
 .club-gate__title {
   margin: 0;
-  font: 600 26px / 1.1 var(--font-display);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--gold);
+  font: 400 28px / 1.15 var(--font-serif);
+  color: var(--text);
 }
 
 .club-gate__detail {
@@ -213,18 +204,17 @@
 
 .dashboard__kicker {
   margin: 0 0 6px;
-  font: 500 12px / 1 var(--font-display);
-  letter-spacing: 0.2em;
+  font: 600 11px / 1 var(--font-display);
+  letter-spacing: var(--label-spacing);
   text-transform: uppercase;
-  color: var(--sunset);
+  color: var(--label);
 }
 
 .dashboard__title {
   margin: 0;
-  font: 600 38px / 1 var(--font-display);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--gold);
+  font: 400 46px / 1.05 var(--font-serif);
+  letter-spacing: -0.01em;
+  color: var(--text);
 }
 
 .panel__detail {
@@ -242,9 +232,8 @@
   text-align: left;
   background: var(--surface);
   border: 1px solid var(--line);
-  border-top: 4px solid var(--gold);
   border-radius: var(--radius);
-  box-shadow: 0 18px 50px rgb(0 0 0 / 0.45);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
 }
 
 .screening__art img,
@@ -254,18 +243,17 @@
   aspect-ratio: 2 / 3;
   object-fit: cover;
   border-radius: var(--radius-sm);
-  box-shadow: 0 8px 24px rgb(0 0 0 / 0.55);
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.16);
 }
 
 .screening__blank {
   display: grid;
   place-items: center;
   padding: 16px;
-  font: 600 22px / 1.1 var(--font-display);
+  font: 400 22px / 1.2 var(--font-serif);
   text-align: center;
-  text-transform: uppercase;
-  color: var(--gold);
-  background: var(--ink);
+  color: var(--text);
+  background: var(--sunken);
 }
 
 .screening__body {
@@ -284,54 +272,50 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-  font: 500 12px / 1 var(--font-display);
-  letter-spacing: 0.2em;
+  font: 600 11.5px / 1 var(--font-display);
+  letter-spacing: var(--label-spacing);
   text-transform: uppercase;
-  color: var(--sunset);
+  color: var(--label);
 }
 
 .screening__soon {
   padding: 4px 8px;
-  letter-spacing: 0.14em;
-  color: var(--ink);
-  background: var(--gold);
+  letter-spacing: 0.12em;
+  color: var(--text);
+  background: var(--highlight);
   border-radius: var(--radius-sm);
 }
 
 .screening__title {
-  font: 600 clamp(28px, 4vw, 44px) / 1.02 var(--font-display);
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  color: var(--gold);
+  font: 400 clamp(32px, 4.6vw, 54px) / 1.05 var(--font-serif);
+  letter-spacing: -0.01em;
+  color: var(--text);
 }
 
 .screening__year {
-  font-weight: 400;
-  color: var(--text-muted);
+  font-weight: 300;
+  color: var(--text-faint);
 }
 
 .screening__when {
-  font: 500 16px / 1.35 var(--font-display);
-  letter-spacing: 0.06em;
-  color: var(--cream);
+  font: 500 15px / 1.45 var(--font-display);
+  letter-spacing: 0.02em;
+  color: var(--text);
 }
 
 .screening__message {
-  padding: 10px 14px;
-  font-size: 15px;
-  line-height: 1.5;
-  color: var(--cream);
-  background: rgb(252 204 12 / 0.08);
-  border-left: 3px solid var(--gold);
-  border-radius: var(--radius-sm);
+  padding: 2px 0 2px 16px;
+  color: var(--text);
+  border-left: 2px solid var(--highlight);
   white-space: pre-line;
+  font: 400 18px / 1.5 var(--font-serif);
+  font-style: italic;
 }
 
 .screening__description {
-  font-size: 15px;
-  line-height: 1.6;
   color: var(--text-muted);
   white-space: pre-line;
+  font: 400 17px / 1.6 var(--font-serif);
 }
 
 .screening--compact {
@@ -402,16 +386,15 @@
 
 .coming-up__date,
 .coming-up__time {
-  font: 500 14px / 1.2 var(--font-display);
-  letter-spacing: 0.08em;
+  font: 500 12px / 1.25 var(--font-display);
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--sunset);
+  color: var(--text-muted);
 }
 
 .coming-up__film {
-  font: 500 18px / 1.2 var(--font-display);
-  letter-spacing: 0.03em;
-  color: var(--cream);
+  font: 400 20px / 1.25 var(--font-serif);
+  color: var(--text);
 }
 
 @media (max-width: 560px) {
@@ -440,10 +423,10 @@
 
 .section-head__title {
   margin: 0;
-  font: 600 24px / 1 var(--font-display);
-  letter-spacing: 0.05em;
+  font: 600 11.5px / 1 var(--font-display);
+  letter-spacing: var(--label-spacing);
   text-transform: uppercase;
-  color: var(--cream);
+  color: var(--label);
 }
 
 .field__hint {
@@ -453,7 +436,12 @@
 
 .field__problem {
   font-size: 13px;
-  color: #ff9b7a;
+  color: var(--danger-text);
+}
+
+.field__input::-webkit-search-cancel-button {
+  filter: grayscale(1) brightness(0.45);
+  cursor: pointer;
 }
 
 textarea.field__input {
@@ -462,17 +450,17 @@ textarea.field__input {
 }
 
 .field__input[type="datetime-local"] {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 .button--danger {
-  color: #ffb49c;
+  color: var(--danger-text);
   background: transparent;
-  box-shadow: inset 0 0 0 1px rgb(199 56 15 / 0.8);
+  border-color: var(--danger);
 }
 
 .button--danger:hover {
-  background: rgb(199 56 15 / 0.2);
+  background: var(--danger-soft);
 }
 
 .editor {
@@ -482,7 +470,6 @@ textarea.field__input {
   padding: 20px;
   background: var(--surface-raised);
   border: 1px solid var(--line);
-  border-left: 4px solid var(--gold);
   border-radius: var(--radius);
 }
 
@@ -495,10 +482,8 @@ textarea.field__input {
 
 .editor__title {
   margin: 0;
-  font: 600 20px / 1 var(--font-display);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--gold);
+  font: 400 24px / 1.15 var(--font-serif);
+  color: var(--text);
 }
 
 .editor fieldset {
@@ -554,7 +539,7 @@ textarea.field__input {
   height: 54px;
   flex: none;
   object-fit: cover;
-  background: var(--ink);
+  background: var(--sunken);
   border-radius: 2px;
 }
 
@@ -568,7 +553,7 @@ textarea.field__input {
   align-items: center;
   gap: 12px;
   padding: 10px 12px;
-  background: var(--ink);
+  background: var(--sunken);
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
 }
@@ -581,9 +566,8 @@ textarea.field__input {
 }
 
 .film-chosen__text strong {
-  font: 600 17px / 1.2 var(--font-display);
-  letter-spacing: 0.03em;
-  color: var(--cream);
+  font: 500 18px / 1.25 var(--font-serif);
+  color: var(--text);
 }
 
 .film-chosen__text span {
@@ -604,7 +588,7 @@ textarea.field__input {
   padding: 4px;
   overflow-y: auto;
   list-style: none;
-  background: var(--ink);
+  background: var(--sunken);
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
 }
@@ -624,14 +608,14 @@ textarea.field__input {
 
 .film-search__row:hover,
 .film-search__row:focus-visible {
-  border-color: var(--sunset);
+  border-color: var(--line-strong);
+  background: var(--accent-soft);
 }
 
 .film-search__title {
   flex: 1;
-  font: 500 15px / 1.2 var(--font-display);
-  letter-spacing: 0.02em;
-  color: var(--cream);
+  font: 400 17px / 1.25 var(--font-serif);
+  color: var(--text);
 }
 
 .film-search__year {
@@ -670,20 +654,20 @@ textarea.field__input {
 .slate__when {
   display: grid;
   gap: 2px;
-  font: 500 14px / 1.2 var(--font-display);
-  letter-spacing: 0.06em;
+  font: 500 12px / 1.35 var(--font-display);
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--cream);
+  color: var(--text);
 }
 
 .slate__time {
-  color: var(--sunset);
+  color: var(--text-muted);
 }
 
 .slate__film {
   min-width: 0;
-  font: 500 17px / 1.3 var(--font-display);
-  color: var(--cream);
+  font: 400 19px / 1.3 var(--font-serif);
+  color: var(--text);
 }
 
 .slate__film span {
@@ -693,30 +677,30 @@ textarea.field__input {
 .slate__film .slate__warning {
   display: block;
   font: 400 12px / 1.3 var(--font-body);
-  color: #ff9b7a;
+  color: var(--danger-text);
 }
 
 .badge {
-  padding: 4px 8px;
-  font: 500 11px / 1 var(--font-display);
-  letter-spacing: 0.14em;
+  padding: 5px 8px;
+  font: 500 10px / 1 var(--font-display);
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   border-radius: var(--radius-sm);
 }
 
 .badge--published {
-  color: var(--ink);
-  background: var(--gold);
+  color: var(--on-accent);
+  background: var(--accent);
 }
 
 .badge--draft {
-  color: var(--cream);
+  color: var(--text-muted);
   box-shadow: inset 0 0 0 1px var(--line-strong);
 }
 
 .badge--cancelled {
-  color: #ffb49c;
-  box-shadow: inset 0 0 0 1px rgb(199 56 15 / 0.8);
+  color: var(--danger-text);
+  box-shadow: inset 0 0 0 1px var(--danger);
 }
 
 @media (max-width: 640px) {
@@ -756,7 +740,7 @@ textarea.field__input {
 .club-panel .choice .chip {
   height: 40px;
   padding: 0 16px;
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .field__input--short {
@@ -772,16 +756,14 @@ textarea.field__input {
 }
 
 .rsvp__for strong {
-  font: 600 20px / 1.2 var(--font-display);
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  color: var(--gold);
+  font: 400 22px / 1.2 var(--font-serif);
+  color: var(--text);
 }
 
 .rsvp__for span {
-  font: 500 14px / 1.3 var(--font-display);
-  letter-spacing: 0.05em;
-  color: var(--cream);
+  font: 500 14px / 1.35 var(--font-display);
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
 }
 
 .answered {
@@ -795,10 +777,8 @@ textarea.field__input {
 }
 
 .answered__title {
-  font: 600 26px / 1.1 var(--font-display);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--gold);
+  font: 400 28px / 1.15 var(--font-serif);
+  color: var(--text);
 }
 
 .answered__detail {
@@ -820,19 +800,18 @@ textarea.field__input {
   padding: 22px;
   background: var(--surface);
   border: 1px solid var(--line);
-  border-top: 4px solid var(--gold);
   border-radius: var(--radius);
 }
 
 .slate__rsvps {
   display: block;
   margin-top: 2px;
-  font: 500 13px / 1.3 var(--font-display);
-  letter-spacing: 0.05em;
+  font: 500 12px / 1.3 var(--font-display);
+  letter-spacing: 0.04em;
 }
 
 .slate__film .slate__rsvps {
-  color: var(--sunset);
+  color: var(--text-muted);
 }
 
 .slate__buttons {
@@ -845,16 +824,16 @@ textarea.field__input {
   gap: 10px;
   margin-left: 24px;
   padding: 14px 16px;
-  background: var(--ink);
+  background: var(--sunken);
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
 }
 
 .guests__totals {
   margin: 0;
-  font: 500 15px / 1.3 var(--font-display);
-  letter-spacing: 0.04em;
-  color: var(--cream);
+  font: 500 14px / 1.3 var(--font-display);
+  letter-spacing: 0.02em;
+  color: var(--text);
 }
 
 .guests__table {
@@ -865,8 +844,8 @@ textarea.field__input {
 
 .guests__table th {
   padding: 6px 8px;
-  font: 500 11px / 1 var(--font-display);
-  letter-spacing: 0.14em;
+  font: 500 10.5px / 1 var(--font-display);
+  letter-spacing: var(--label-spacing);
   text-align: left;
   text-transform: uppercase;
   color: var(--text-muted);
@@ -876,7 +855,7 @@ textarea.field__input {
 .guests__table td {
   padding: 8px;
   vertical-align: top;
-  border-bottom: 1px solid rgb(244 230 200 / 0.06);
+  border-bottom: 1px solid var(--line-faint);
 }
 
 .guests__count {
@@ -889,22 +868,22 @@ textarea.field__input {
 }
 
 .signed-in {
-  color: var(--gold);
+  color: var(--label);
 }
 
 .badge--answer-yes {
-  color: var(--ink);
-  background: var(--gold);
+  color: var(--on-accent);
+  background: var(--accent);
 }
 
 .badge--answer-maybe {
-  color: var(--ink);
-  background: var(--sunset);
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px var(--text);
 }
 
 .badge--answer-no {
-  color: var(--cream);
-  box-shadow: inset 0 0 0 1px var(--line-strong);
+  color: var(--text-faint);
+  box-shadow: inset 0 0 0 1px var(--line);
 }
 
 .pitches {
@@ -937,8 +916,8 @@ textarea.field__input {
 }
 
 .pitch__title {
-  font: 500 17px / 1.3 var(--font-display);
-  color: var(--cream);
+  font: 400 19px / 1.3 var(--font-serif);
+  color: var(--text);
 }
 
 .pitch__title span {
@@ -948,17 +927,18 @@ textarea.field__input {
 .pitch__title .pitch__owned {
   margin-left: 8px;
   padding: 2px 6px;
-  font-size: 11px;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--gold);
-  box-shadow: inset 0 0 0 1px rgb(252 204 12 / 0.5);
+  color: var(--label);
+  box-shadow: inset 0 0 0 1px var(--line-strong);
   border-radius: var(--radius-sm);
+  font: 600 10px / 1 var(--font-display);
+  vertical-align: middle;
 }
 
 .pitch__by {
   font-size: 13px;
-  color: var(--sunset);
+  color: var(--text-muted);
 }
 
 .pitch__note {
@@ -1019,9 +999,8 @@ textarea.field__input {
 
 .poll__question {
   margin: 0;
-  font: 600 22px / 1.2 var(--font-display);
-  letter-spacing: 0.03em;
-  color: var(--cream);
+  font: 400 24px / 1.25 var(--font-serif);
+  color: var(--text);
 }
 
 .poll__options {
@@ -1038,7 +1017,7 @@ textarea.field__input {
   align-items: center;
   gap: 12px;
   padding: 8px 12px;
-  background: var(--ink);
+  background: var(--sunken);
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   cursor: pointer;
@@ -1046,22 +1025,21 @@ textarea.field__input {
 
 .poll__option:hover,
 .poll__option:has(input:checked) {
-  border-color: var(--gold);
+  border-color: var(--text);
 }
 
 .poll__option input {
   width: 18px;
   height: 18px;
   flex: none;
-  accent-color: var(--gold);
+  accent-color: var(--highlight);
 }
 
 .poll__film {
   flex: 1;
   min-width: 0;
-  font: 500 16px / 1.25 var(--font-display);
-  letter-spacing: 0.02em;
-  color: var(--cream);
+  font: 400 17px / 1.3 var(--font-serif);
+  color: var(--text);
 }
 
 .poll__year {
@@ -1070,11 +1048,11 @@ textarea.field__input {
 
 .poll__mine {
   padding: 3px 7px;
-  font: 500 11px / 1 var(--font-display);
-  letter-spacing: 0.12em;
+  font: 500 10px / 1 var(--font-display);
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--ink);
-  background: var(--gold);
+  color: var(--on-accent);
+  background: var(--accent);
   border-radius: var(--radius-sm);
 }
 
@@ -1107,8 +1085,8 @@ textarea.field__input {
 }
 
 .result__count {
-  font: 500 14px / 1 var(--font-display);
-  letter-spacing: 0.05em;
+  font: 500 13px / 1 var(--font-display);
+  letter-spacing: 0.04em;
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -1117,17 +1095,17 @@ textarea.field__input {
 .result__bar {
   display: block;
   min-width: 2px;
-  height: 8px;
-  background: var(--rust);
-  border-radius: 999px;
+  height: 4px;
+  background: var(--line-strong);
+  border-radius: var(--radius-sm);
 }
 
 .result--leading .result__bar {
-  background: var(--gold);
+  background: var(--highlight);
 }
 
 .result--leading .result__count {
-  color: var(--gold);
+  color: var(--text);
 }
 
 .result__voters {
@@ -1143,7 +1121,6 @@ textarea.field__input {
   padding: 20px;
   background: var(--surface);
   border: 1px solid var(--line);
-  border-top: 4px solid var(--sunset);
   border-radius: var(--radius);
 }
 
@@ -1158,14 +1135,14 @@ textarea.field__input {
   gap: 10px;
   justify-self: start;
   font-size: 14px;
-  color: var(--cream);
+  color: var(--text);
   cursor: pointer;
 }
 
 .switch input {
   width: 18px;
   height: 18px;
-  accent-color: var(--gold);
+  accent-color: var(--highlight);
 }
 
 .poll-cards {
@@ -1197,24 +1174,23 @@ textarea.field__input {
 }
 
 .poll-card__question {
-  font: 600 19px / 1.25 var(--font-display);
-  letter-spacing: 0.02em;
-  color: var(--cream);
+  font: 400 21px / 1.3 var(--font-serif);
+  color: var(--text);
 }
 
 .badge--poll-open {
-  color: var(--ink);
-  background: var(--gold);
+  color: var(--text);
+  background: var(--highlight);
 }
 
 .badge--poll-draft {
-  color: var(--cream);
+  color: var(--text-muted);
   box-shadow: inset 0 0 0 1px var(--line-strong);
 }
 
 .badge--poll-closed {
-  color: var(--cream);
-  background: var(--rust);
+  color: var(--text-muted);
+  background: var(--surface-raised);
 }
 
 .editor--single {
@@ -1240,20 +1216,20 @@ textarea.field__input {
   justify-content: space-between;
   gap: 12px;
   padding: 6px 10px;
-  background: var(--ink);
+  background: var(--sunken);
   border-radius: var(--radius-sm);
 }
 
 .option-list__row > span {
-  font: 500 16px / 1.3 var(--font-display);
-  color: var(--cream);
+  font: 400 17px / 1.3 var(--font-serif);
+  color: var(--text);
 }
 
 .option-add {
   display: grid;
   gap: 10px;
   padding: 14px;
-  background: var(--ink);
+  background: var(--sunken);
   border: 1px dashed var(--line-strong);
   border-radius: var(--radius-sm);
 }
@@ -1281,12 +1257,12 @@ textarea.field__input {
 .tag {
   margin-left: 8px;
   padding: 2px 6px;
-  font: 500 11px / 1 var(--font-display);
-  letter-spacing: 0.12em;
+  font: 500 10px / 1 var(--font-display);
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   vertical-align: middle;
-  color: var(--gold);
-  box-shadow: inset 0 0 0 1px rgb(252 204 12 / 0.5);
+  color: var(--label);
+  box-shadow: inset 0 0 0 1px var(--line-strong);
   border-radius: var(--radius-sm);
 }
 
