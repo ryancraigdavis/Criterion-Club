@@ -115,7 +115,7 @@ Images are built here and pulled from GHCR; the NAS never needs the source.
 2. `docker login ghcr.io` (a GitHub token with `write:packages`), commit, then `just release`.
    On first push, set both packages (`criterion-club-api`, `criterion-club-web`) to **Public** under
    GitHub → Packages → Package settings, so the NAS can pull without credentials.
-3. TrueNAS: create the dataset `main_storage/apps/criterion-club` and set its owner to user and
+3. TrueNAS: create the dataset `main_storage/criterion-club` (Generic preset, beside the other app datasets) and set its owner to user and
    group `apps` (568). Apps → Discover → ⋮ → **Install via YAML**, name it `criterion-club`, paste
    `deploy/truenas-app.yaml` with the service token in place of `dp.st.prd.REPLACE_ME`.
 4. Check `http://192.168.10.108:8766/api/health` says `"emby_ok": true`. The poster mosaic appears

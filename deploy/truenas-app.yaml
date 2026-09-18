@@ -12,7 +12,7 @@ services:
       DOPPLER_TOKEN: "dp.st.prd.REPLACE_ME"
       DATA_DIR: /data
     volumes:
-      - /mnt/main_storage/apps/criterion-club:/data
+      - /mnt/main_storage/criterion-club:/data
     restart: unless-stopped
 
   # Must stay named `api`: the web container's nginx proxies /api/ to http://api:8000.
