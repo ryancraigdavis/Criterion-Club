@@ -171,6 +171,14 @@ def test_posts_are_rate_limited(api, screening):
     assert statuses[30] == 429
 
 
+def test_a_throttled_suggestion_never_reaches_emby(api, screening, fake_emby):
+    for i in range(30):
+        _rsvp(api, screening, name=f"Person {i}")
+    fake_emby.down = True
+    body = {"item_id": "m1", "name": "Eli"}
+    assert api.post("/api/club/suggestions", json=body).status_code == 429
+
+
 def test_cross_site_rsvp_is_refused(api, screening):
     headers = {"Origin": "https://evil.example"}
     body = {"event_id": screening, "answer": "yes", "name": "Eli"}

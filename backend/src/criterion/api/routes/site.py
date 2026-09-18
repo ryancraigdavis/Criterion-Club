@@ -7,7 +7,7 @@ router = APIRouter(tags=["site"])
 
 @router.get("/health")
 async def health(request: Request) -> dict:
-    return {"status": "ok", "emby_ok": await emby_of(request).server_id() is not None}
+    return {"status": "ok", "emby_ok": await emby_of(request).ping()}
 
 
 @router.get("/site")

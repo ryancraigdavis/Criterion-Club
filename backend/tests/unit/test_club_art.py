@@ -90,3 +90,17 @@ async def test_a_held_poster_is_not_fetched_again(tmp_path):
 
 async def test_a_film_without_an_image_has_no_version(tmp_path):
     assert await art.cache_emby(_Emby(None), "m3", "tag-m3", tmp_path) is None
+
+
+async def test_a_poster_missing_its_thumb_is_fetched_again(tmp_path):
+    emby = _Emby(_png())
+    version = await art.cache_emby(emby, "m1", "tag-m1", tmp_path)
+    art.art_path(tmp_path, version, art.THUMB).unlink()
+    await art.cache_emby(emby, "m1", "tag-m1", tmp_path)
+    assert len(emby.calls) == 2
+    assert art.is_held(tmp_path, version)
+
+
+async def test_writes_leave_no_partial_files(tmp_path):
+    await art.cache_emby(_Emby(_png()), "m1", "tag-m1", tmp_path)
+    assert sorted(path.suffix for path in art.art_dir(tmp_path).iterdir()) == [".webp", ".webp"]

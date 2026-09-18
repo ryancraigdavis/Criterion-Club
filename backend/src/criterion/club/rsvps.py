@@ -3,9 +3,6 @@ import sqlite3
 from criterion.club import art
 from criterion.club.sessions import Session
 
-ANSWERS = ("yes", "maybe", "no")
-STATUSES = ("new", "shortlisted", "scheduled", "declined")
-
 
 def tidy_name(name: str) -> str:
     return " ".join(name.split())

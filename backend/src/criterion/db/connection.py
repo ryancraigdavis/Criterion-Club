@@ -2,18 +2,24 @@ import sqlite3
 from pathlib import Path
 
 SCHEMA_PATH = Path(__file__).with_name("schema.sql")
-ADDED_COLUMNS = {
-    "club_events": {"runtime_min": "INTEGER"},
-    "club_suggestions": {"art_version": "TEXT"},
-    "club_poll_options": {"art_version": "TEXT"},
-}
+# schema.sql is always the current shape. Append single statements here to bring databases created
+# before a change up to it; a fresh database skips them and starts at len(MIGRATIONS).
+MIGRATIONS: tuple[str, ...] = ()
 
 
-def _add_missing(conn: sqlite3.Connection, table: str, columns: dict[str, str]) -> None:
-    existing = {row["name"] for row in conn.execute(f"PRAGMA table_info({table})")}
-    missing = {name: kind for name, kind in columns.items() if name not in existing}
-    for name, kind in missing.items():
-        conn.execute(f"ALTER TABLE {table} ADD COLUMN {name} {kind}")
+def _version(conn: sqlite3.Connection) -> int:
+    return conn.execute("PRAGMA user_version").fetchone()[0]
+
+
+def _is_empty(conn: sqlite3.Connection) -> bool:
+    return conn.execute("SELECT count(*) FROM sqlite_master").fetchone()[0] == 0
+
+
+def migrate(conn: sqlite3.Connection, migrations: tuple[str, ...], start: int) -> None:
+    with conn:
+        for statement in migrations[start:]:
+            conn.execute(statement)
+        conn.execute(f"PRAGMA user_version = {len(migrations)}")
 
 
 def connect(data_dir: Path) -> sqlite3.Connection:
@@ -21,8 +27,7 @@ def connect(data_dir: Path) -> sqlite3.Connection:
     conn = sqlite3.connect(data_dir / "club.db", check_same_thread=False)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA journal_mode=WAL")
+    start = len(MIGRATIONS) if _is_empty(conn) else _version(conn)
     conn.executescript(SCHEMA_PATH.read_text())
-    with conn:
-        for table, columns in ADDED_COLUMNS.items():
-            _add_missing(conn, table, columns)
+    migrate(conn, MIGRATIONS, start)
     return conn

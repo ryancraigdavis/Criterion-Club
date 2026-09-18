@@ -98,3 +98,60 @@ async def test_an_unreachable_server_is_reported():
     client = EmbyClient("http://emby.test", "key", transport=httpx.MockTransport(handler))
     with pytest.raises(EmbyUnavailable):
         await client.search("blood")
+
+
+class Counting:
+    def __init__(self, status: int = 200) -> None:
+        self.status = status
+        self.paths: list[str] = []
+
+    def _handle(self, request: httpx.Request) -> httpx.Response:
+        self.paths.append(request.url.path)
+        return httpx.Response(self.status, json={"Id": "server-1"})
+
+    def client(self) -> EmbyClient:
+        return EmbyClient("http://emby.test", "key", transport=httpx.MockTransport(self._handle))
+
+
+async def test_the_server_id_is_fetched_once():
+    emby = Counting()
+    client = emby.client()
+    assert [await client.server_id() for _ in range(3)] == ["server-1"] * 3
+    assert len(emby.paths) == 1
+
+
+async def test_an_unreachable_server_id_is_not_retried_at_once():
+    emby = Counting(status=503)
+    client = emby.client()
+    assert [await client.server_id() for _ in range(3)] == [None] * 3
+    assert len(emby.paths) == 1
+
+
+@pytest.mark.parametrize(
+    ("status", "expected"),
+    [pytest.param(200, True, id="answering"), pytest.param(503, False, id="down")],
+)
+async def test_ping_asks_every_time(status, expected):
+    emby = Counting(status=status)
+    client = emby.client()
+    assert [await client.ping() for _ in range(2)] == [expected, expected]
+    assert len(emby.paths) == 2
+
+
+async def test_a_server_without_users_is_unavailable():
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, json=[] if request.url.path == "/Users" else {"Items": []})
+
+    client = EmbyClient("http://emby.test", "key", transport=httpx.MockTransport(handler))
+    with pytest.raises(EmbyUnavailable):
+        await client.search("blood")
+
+
+async def test_falls_back_to_the_first_user_without_an_administrator():
+    users = [{"Id": "u-one", "Policy": {}}, {"Id": "u-two"}]
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, json=users if request.url.path == "/Users" else {"Items": []})
+
+    client = EmbyClient("http://emby.test", "key", transport=httpx.MockTransport(handler))
+    assert await client.user_id() == "u-one"

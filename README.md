@@ -17,7 +17,7 @@ frontend/  React: the club page (/) and the admin dashboard (/admin)
 
 ## Running locally
 
-Secrets come from Doppler (`criterion_club` / `dev`); every command goes through `doppler run --`.
+Secrets come from Doppler (`criterion-club` / `dev`); every command goes through `doppler run --`.
 
 ```
 just api     # backend on :8100
@@ -67,19 +67,30 @@ poster and details.
 `docker compose` runs the API (with Doppler) and an nginx container that serves the built frontend
 and proxies `/api/` to it. Point the reverse proxy at port 8766.
 
+Compose reads `DOPPLER_TOKEN` and `WEB_PORT` from a gitignored `.env` next to the compose file. The
+token must be a **service token** for one config, never your personal CLI login:
+
 ```
-DOPPLER_TOKEN=<service token> docker compose up --build -d   # http://localhost:8766
-docker compose down
+doppler configs tokens create local-docker --project criterion-club --config dev --plain
+echo "DOPPLER_TOKEN=dp.st.dev.…" > .env
+just up        # docker compose up --build -d → http://localhost:8766
+just down
 ```
 
-`WEB_PORT` changes the published port and can live in a `.env` file next to the compose file. The
-database and cached art live in the `criterion-club-data` volume.
+The API runs as uid/gid 568 (TrueNAS's `apps` user) and keeps a Doppler fallback file in `/data`,
+so it still starts if Doppler is unreachable after a reboot. Both containers have healthchecks; the
+web container waits for the API to be healthy. The database and cached art live in the
+`criterion-club-data` volume.
+
+nginx trusts `X-Forwarded-For` only from private addresses and passes the API a single client
+address, which is what the sign-in, post and search throttles key on. The API must run as a single
+worker: the throttles live in memory and there is one shared SQLite connection.
 
 ## API
 
 | Method | Path | Auth | Notes |
 |---|---|---|---|
-| GET | `/api/health` | — | `{status, emby_ok}` |
+| GET | `/api/health` | — | `{status, emby_ok}`; asks Emby live every time |
 | GET | `/api/site` | — | Emby address for the outbound links |
 | POST | `/api/club/login` | — | `{username, password}` → sets the cookie |
 | POST | `/api/club/logout` | — | clears the cookie |
@@ -113,7 +124,7 @@ database and cached art live in the `criterion-club-data` volume.
 | `EMBY_PUBLIC_URL` | `EMBY_SERVER_URL` | what the "Emby" links point at |
 | `DATA_DIR` | `./data` | holds `club.db` and `club-art/` |
 | `FRONTEND_ORIGIN` | `http://localhost:5273` | CORS and the same-site check |
-| `LOG_LEVEL` / `LOG_JSON` | `INFO` / `false` | |
+| `LOG_LEVEL` / `LOG_JSON` | `INFO` / `false` | level is case-insensitive; a typo fails startup |
 
 ## Screenshot tool
 

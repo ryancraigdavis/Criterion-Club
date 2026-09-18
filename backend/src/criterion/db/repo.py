@@ -1,9 +1,4 @@
 import sqlite3
-from datetime import UTC, datetime
-
-
-def _now() -> str:
-    return datetime.now(UTC).isoformat(timespec="seconds")
 
 
 def get_meta(conn: sqlite3.Connection, key: str) -> str | None:

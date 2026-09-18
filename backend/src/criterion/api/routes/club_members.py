@@ -102,8 +102,8 @@ async def suggest(request: Request, body: SuggestionIn) -> dict:
     require_same_site(request)
     session = session_of(request)
     name = _member_name(session, body.name)
-    film = await _film(request, body)
     limit_posts(request)
+    film = await _film(request, body)
     club_repo.insert_suggestion(
         conn_of(request),
         {

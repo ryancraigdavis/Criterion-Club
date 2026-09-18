@@ -5,7 +5,11 @@ import structlog
 
 
 def configure_logging(level: str = "INFO", json_logs: bool = False) -> None:
-    renderer = structlog.processors.JSONRenderer() if json_logs else structlog.dev.ConsoleRenderer()
+    renderer = (
+        structlog.processors.JSONRenderer()
+        if json_logs
+        else structlog.dev.ConsoleRenderer(colors=sys.stdout.isatty())
+    )
     structlog.configure(
         processors=[
             structlog.contextvars.merge_contextvars,
@@ -15,9 +19,7 @@ def configure_logging(level: str = "INFO", json_logs: bool = False) -> None:
             structlog.processors.format_exc_info,
             renderer,
         ],
-        wrapper_class=structlog.make_filtering_bound_logger(
-            logging.getLevelNamesMapping()[level.upper()]
-        ),
+        wrapper_class=structlog.make_filtering_bound_logger(logging.getLevelNamesMapping()[level]),
         logger_factory=structlog.PrintLoggerFactory(file=sys.stdout),
         cache_logger_on_first_use=True,
     )

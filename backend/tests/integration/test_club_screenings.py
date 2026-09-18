@@ -132,6 +132,33 @@ def test_a_film_without_a_poster_still_saves(admin):
     assert (screening["title"], screening["poster_url"]) == ("No Poster", None)
 
 
+@pytest.mark.parametrize(
+    "replacement",
+    [
+        pytest.param({"item_id": "m3"}, id="library-film-without-art"),
+        pytest.param({"title": "Paris, Texas"}, id="typed-film-without-link"),
+    ],
+)
+def test_changing_the_film_drops_the_old_poster(admin, replacement):
+    screening = _create(admin, item_id="m1")
+    changed = admin.post(
+        f"/api/club/admin/events/{screening['id']}",
+        json={"starts_at": _at(48), "status": "published", **replacement},
+    ).json()["screening"]
+    assert changed["poster_url"] is None
+
+
+def test_an_edit_keeps_a_typed_poster_without_refetching(admin, mocker):
+    cache = mocker.patch("criterion.club.art.cache_url", mocker.AsyncMock(return_value="v1"))
+    body = {"title": "Paris, Texas", "art_url": "https://img.example/p.jpg", "starts_at": _at(48)}
+    screening = _create(admin, **body)
+    changed = admin.post(
+        f"/api/club/admin/events/{screening['id']}", json={**body, "location": "Garage"}
+    ).json()["screening"]
+    assert changed["poster_url"] == "/api/club-art/v1.webp"
+    assert cache.await_count == 1
+
+
 def test_an_unreachable_emby_blocks_a_library_screening(admin, fake_emby):
     fake_emby.down = True
     body = {"starts_at": _at(48), "item_id": "m1"}

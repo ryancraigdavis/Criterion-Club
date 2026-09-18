@@ -1,4 +1,8 @@
+import time
+from itertools import chain
+
 import httpx
+import structlog
 
 from criterion.emby import auth
 from criterion.emby.auth import EmbyUnavailable
@@ -8,6 +12,9 @@ FIELDS = "Overview,ProductionYear,RunTimeTicks,ImageTags"
 TICKS_PER_MINUTE = 600_000_000
 SEARCH_LIMIT = 20
 TIMEOUT = 8.0
+FAILURE_MEMORY = 60.0
+
+log = structlog.get_logger()
 
 
 def _is_admin(user: dict) -> bool:
@@ -47,6 +54,7 @@ class EmbyClient:
         self._transport = transport
         self._user_id: str | None = None
         self._server_id: str | None = None
+        self._retry_at = 0.0
 
     async def close(self) -> None:
         await self._http.aclose()
@@ -60,12 +68,15 @@ class EmbyClient:
             response.raise_for_status()
             body = response.json()
         except (httpx.HTTPError, ValueError) as error:
+            log.warning("emby_unavailable", path=path, error=str(error))
             raise EmbyUnavailable(str(error)) from error
         return body
 
     async def _pick_user(self) -> str:
         users = await self._get_json("/Users")
-        chosen = next((user for user in users if _is_admin(user)), users[0])
+        chosen = next(chain(filter(_is_admin, users), users), None)
+        if chosen is None:
+            raise EmbyUnavailable("emby has no users")
         return str(chosen["Id"])
 
     async def user_id(self) -> str:
@@ -79,8 +90,16 @@ class EmbyClient:
             info = {}
         return info.get("Id")
 
+    async def ping(self) -> bool:
+        return await self._public_server_id() is not None
+
+    async def _server_id_now(self) -> str | None:
+        found = await self._public_server_id() if time.monotonic() >= self._retry_at else None
+        self._retry_at = self._retry_at if found else time.monotonic() + FAILURE_MEMORY
+        return found
+
     async def server_id(self) -> str | None:
-        self._server_id = self._server_id or await self._public_server_id()
+        self._server_id = self._server_id or await self._server_id_now()
         return self._server_id
 
     async def _items(self, params: dict) -> list[dict]:

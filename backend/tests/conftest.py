@@ -44,6 +44,9 @@ class FakeEmby:
     async def server_id(self) -> str | None:
         return None if self.down else "server-1"
 
+    async def ping(self) -> bool:
+        return not self.down
+
     async def authenticate(self, username: str, password: str) -> EmbyUser:
         self._answer()
         expected, user = EMBY_ACCOUNTS.get(username.casefold(), (None, None))

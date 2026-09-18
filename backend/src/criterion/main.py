@@ -1,6 +1,7 @@
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
+import structlog
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -13,6 +14,8 @@ from criterion.db.connection import connect
 from criterion.emby.client import EmbyClient
 from criterion.logging import configure_logging
 
+log = structlog.get_logger()
+
 
 def _lifespan(settings: Settings, client: EmbyClient | None):
     @asynccontextmanager
@@ -23,6 +26,14 @@ def _lifespan(settings: Settings, client: EmbyClient | None):
         app.state.login_throttle = Throttle()
         app.state.post_throttle = Throttle(limit=30, window=600.0)
         app.state.search_throttle = Throttle(limit=60, window=60.0)
+        log.info(
+            "started",
+            emby=settings.emby_base,
+            data_dir=str(settings.data_dir),
+            sign_in=bool(settings.session_secret),
+            admins=len(settings.club_admin_names),
+            secure_cookies=settings.secure_cookies,
+        )
         yield
         await emby.close()
         conn.close()

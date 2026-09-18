@@ -5,8 +5,8 @@ import httpx
 from criterion.emby.models import EmbyUser
 
 AUTHORIZATION = (
-    'MediaBrowser Client="There Will Be Cinema", Device="Web", '
-    'DeviceId="there-will-be-cinema-web", Version="1.0.0"'
+    'MediaBrowser Client="Criterion Club", Device="Web", '
+    'DeviceId="criterion-club-web", Version="1.0.0"'
 )
 TIMEOUT = 15.0
 

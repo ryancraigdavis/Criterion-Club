@@ -132,3 +132,15 @@ def test_health_reports_the_emby_connection(api, fake_emby):
     assert api.get("/api/health").json() == {"status": "ok", "emby_ok": True}
     fake_emby.down = True
     assert api.get("/api/health").json()["emby_ok"] is False
+
+
+def test_cached_art_is_immutable(api, data_dir):
+    (data_dir / "club-art" / "abc.webp").write_bytes(b"RIFF")
+    cache = api.get("/api/club-art/abc.webp").headers["cache-control"]
+    assert "immutable" in cache
+
+
+def test_missing_art_is_not_cached(api):
+    response = api.get("/api/club-art/nope.webp")
+    assert response.status_code == 404
+    assert "immutable" not in response.headers.get("cache-control", "")

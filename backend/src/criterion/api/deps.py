@@ -1,6 +1,7 @@
 import time
 from urllib.parse import urlsplit
 
+import structlog
 from fastapi import HTTPException, Request
 
 from criterion.club import sessions
@@ -8,6 +9,8 @@ from criterion.club.sessions import Session
 from criterion.club.throttle import Throttle, TooManyAttempts
 from criterion.config import Settings
 from criterion.emby.client import EmbyClient
+
+log = structlog.get_logger()
 
 
 def settings_of(request: Request) -> Settings:
@@ -31,6 +34,7 @@ def _limit(request: Request, throttle: Throttle, detail: str) -> None:
     try:
         throttle.check(keys, now)
     except TooManyAttempts as error:
+        log.warning("throttled", keys=keys, path=request.url.path)
         raise HTTPException(429, detail) from error
     throttle.record(keys, now)
 

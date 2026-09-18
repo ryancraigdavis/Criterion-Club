@@ -1,6 +1,7 @@
 import time
 from datetime import UTC, datetime
 
+import structlog
 from fastapi import APIRouter, HTTPException, Query, Request, Response
 from pydantic import BaseModel, Field
 
@@ -19,6 +20,7 @@ from criterion.emby.auth import EmbyUnavailable, InvalidLogin
 from criterion.emby.models import EmbyUser
 
 router = APIRouter(tags=["club"])
+log = structlog.get_logger()
 
 
 class Credentials(BaseModel):
@@ -48,13 +50,17 @@ async def _verify(request: Request, credentials: Credentials) -> EmbyUser:
             credentials.username.strip(), credentials.password
         )
     except TooManyAttempts as error:
+        log.warning("throttled", keys=keys, path=request.url.path)
         raise HTTPException(429, "too many sign-in attempts, try again in a few minutes") from error
     except InvalidLogin as error:
+        log.info("sign_in_refused", username=credentials.username.strip())
         throttle.record(keys, now)
         raise HTTPException(401, "invalid username or password") from error
     except EmbyUnavailable as error:
+        log.warning("sign_in_emby_unavailable", error=str(error))
         raise HTTPException(502, "the emby server did not answer") from error
     throttle.clear(keys)
+    log.info("signed_in", name=user.name)
     return user
 
 

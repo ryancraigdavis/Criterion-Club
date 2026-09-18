@@ -28,8 +28,9 @@ test: test-api test-web
 build:
     docker compose build
 
+# Reads DOPPLER_TOKEN (a service token, never your personal login) from .env beside this file.
 up:
-    DOPPLER_TOKEN=$(doppler configure get token --plain) docker compose up --build -d
+    docker compose up --build -d
 
 down:
     docker compose down

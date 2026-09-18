@@ -11,7 +11,7 @@ IMMUTABLE = "public, max-age=31536000, immutable"
 class CacheHeaderMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         response = await call_next(request)
-        immutable = request.url.path.startswith("/api/club-art/")
+        immutable = response.status_code == 200 and request.url.path.startswith("/api/club-art/")
         response.headers.update({"Cache-Control": IMMUTABLE} if immutable else {})
         return response
 

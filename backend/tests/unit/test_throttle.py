@@ -45,3 +45,9 @@ def test_success_clears_the_count(throttle):
         throttle.record(KEYS, at)
     throttle.clear(KEYS)
     throttle.check(KEYS, 3.0)
+
+
+def test_idle_keys_are_forgotten(throttle):
+    throttle.record(["ip:1.2.3.4"], 0.0)
+    throttle.record(["ip:5.6.7.8"], 100.0)
+    assert list(throttle._failures) == ["ip:5.6.7.8"]

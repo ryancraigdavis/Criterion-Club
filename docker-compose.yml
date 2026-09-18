@@ -2,7 +2,7 @@ services:
   api:
     build: ./backend
     environment:
-      DOPPLER_TOKEN: ${DOPPLER_TOKEN:?set a Doppler service token for the config to deploy}
+      DOPPLER_TOKEN: ${DOPPLER_TOKEN:?set DOPPLER_TOKEN to a Doppler service token, e.g. in .env}
       DATA_DIR: /data
     volumes:
       - criterion-club-data:/data
@@ -11,7 +11,8 @@ services:
   web:
     build: ./frontend
     depends_on:
-      - api
+      api:
+        condition: service_healthy
     ports:
       - "${WEB_PORT:-8766}:8080"
     restart: unless-stopped

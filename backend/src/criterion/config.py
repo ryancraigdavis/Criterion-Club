@@ -1,7 +1,14 @@
 from functools import lru_cache
 from pathlib import Path
+from typing import Annotated, Literal
 
+from pydantic import BeforeValidator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+LogLevel = Annotated[
+    Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+    BeforeValidator(lambda value: str(value).strip().upper()),
+]
 
 
 def _with_scheme(url: str) -> str:
@@ -18,7 +25,7 @@ class Settings(BaseSettings):
 
     emby_public_url: str = ""
     data_dir: Path = Path("./data")
-    log_level: str = "INFO"
+    log_level: LogLevel = "INFO"
     log_json: bool = False
     frontend_origin: str = "http://localhost:5273"
     session_secret: str = ""

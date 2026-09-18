@@ -20,9 +20,17 @@ class Throttle:
         if any(len(self._recent(key, now)) >= self.limit for key in keys):
             raise TooManyAttempts
 
+    def _sweep(self, now: float) -> None:
+        self._failures = {
+            key: times
+            for key, times in self._failures.items()
+            if times and now - times[-1] < self.window
+        }
+
     def record(self, keys: list[str], now: float) -> None:
+        self._sweep(now)
         for key in keys:
-            self._recent(key, now).append(now)
+            self._failures[key] = [*self._recent(key, now), now]
 
     def clear(self, keys: list[str]) -> None:
         for key in keys:

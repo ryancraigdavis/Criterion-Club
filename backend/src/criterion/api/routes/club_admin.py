@@ -50,7 +50,8 @@ async def _resolve(request: Request, body: ScreeningIn) -> dict:
 
 
 async def _typed_version(data_dir: Path, url: str | None, before: sqlite3.Row | None) -> str | None:
-    held = before["art_version"] if before is not None and before["art_url"] == url else None
+    same_link = url is not None and before is not None and before["art_url"] == url
+    held = before["art_version"] if same_link else None
     return held or (await art.cache_url(url, data_dir) if url else None)
 
 
